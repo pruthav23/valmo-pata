@@ -1,14 +1,23 @@
-# Valmo Pata · address graph prototype
+# Valmo Pata prototype
 
 Meesho DICE S3 · Team Prod Gods, IIT Kanpur
 
-Interactive demo of Valmo Pata on 30,000 synthetic orders calibrated to the Meesho case pack (80% COD, 20% / 5% RTO, 15 / 17 / 22% by distance). Not real Meesho data.
+Two pages:
+- **Live demo**: customer phone → rider phone → address graph, updating as you click.
+- **Impact at scale**: 30,000 synthetic orders calibrated to the Meesho case pack (80% COD, 20% / 5% RTO, 15 / 17 / 22% by distance). Not real Meesho data.
+
+## Files
+    app.py               entry point (page menu)
+    live_demo_page.py    page 1
+    live_demo.html       the live demo itself (also works on its own in any browser)
+    dashboard.py         page 2
+    data/                synthetic orders
+    requirements.txt
+    .streamlit/config.toml   colours
 
 ## Run locally
     pip install -r requirements.txt
     streamlit run app.py
 
 ## Deploy on Streamlit Community Cloud
-1. Create a public GitHub repo and upload everything in this folder (keep the data/ folder).
-2. Go to share.streamlit.io, sign in with GitHub, click Create app.
-3. Pick the repo, branch main, main file app.py, and click Deploy.
+Push every file above to a public GitHub repo, then share.streamlit.io → Create app → main file `app.py` → Deploy.

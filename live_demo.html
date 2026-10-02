@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Valmo Pata · live demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3EFF2; --panel:#FFFFFF; --ink:#231B21; --muted:#5E5560; --line:#E2DAE0;
+  --plum:#5B1A47; --plum-soft:#EFE2EB; --teal:#0B5A4C; --teal-soft:#DDF1EC; --amber:#7A4700; --amber-soft:#FBEBD0;
+  --blue:#1B4F9C; --blue-soft:#DCE7F8; --red:#B3122C; --red-soft:#F8DCE1; --grey-soft:#ECE8EC;
+  --map:#E9E3E7; --lane:#FFFFFF; --bldg:#CFC6CC; --grid:rgba(35,27,33,.10); --phone:#231B21;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141013; --panel:#1E181C; --ink:#EDE6EB; --muted:#A99DA6; --line:#352C32;
+  --plum:#C77DB0; --plum-soft:#3A2333; --teal:#5FD0B4; --teal-soft:#123A31; --amber:#F0B45A; --amber-soft:#3B2B12;
+  --blue:#8DB4F2; --blue-soft:#1A2A45; --red:#FF7088; --red-soft:#43161F; --grey-soft:#2A2328;
+  --map:#221B20; --lane:#33292F; --bldg:#433840; --grid:rgba(237,230,235,.10); --phone:#000;}}
+:root[data-theme="dark"]{
+  --bg:#141013; --panel:#1E181C; --ink:#EDE6EB; --muted:#A99DA6; --line:#352C32;
+  --plum:#C77DB0; --plum-soft:#3A2333; --teal:#5FD0B4; --teal-soft:#123A31; --amber:#F0B45A; --amber-soft:#3B2B12;
+  --blue:#8DB4F2; --blue-soft:#1A2A45; --red:#FF7088; --red-soft:#43161F; --grey-soft:#2A2328;
+  --map:#221B20; --lane:#33292F; --bldg:#433840; --grid:rgba(237,230,235,.10); --phone:#000;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Hind,"Noto Sans",system-ui,sans-serif}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;letter-spacing:.02em}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--plum);outline-offset:2px}
+.wrap{max-width:1500px;margin:0 auto;padding:18px 20px 40px}
+
+header{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+header h1{margin:0;font-size:clamp(24px,3vw,34px);font-weight:700;line-height:1.1}
+header p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.step{font-size:13.5px;font-weight:600;padding:6px 12px;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--muted)}
+.step.on{background:var(--plum);border-color:var(--plum);color:#fff}
+
+.controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr) minmax(0,1.3fr);gap:16px;align-items:start}
+@media (max-width:1100px){.controls{grid-template-columns:1fr}}
+.controls label.lbl{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin-bottom:4px}
+select,input[type=text]{width:100%;height:42px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px;background:var(--bg)}
+.textrow{display:flex;gap:6px}
+.textrow input{flex:1}
+.iconbtn{height:42px;padding:0 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer;white-space:nowrap;font-size:13.5px}
+.chips{margin-top:6px;font-size:12.5px;color:var(--muted);min-height:22px}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:99px;margin-right:4px}
+.chip.id{background:var(--teal-soft);color:var(--teal)}
+.chip.plain{background:var(--grey-soft);color:var(--muted);font-weight:500}
+.actions{display:flex;flex-direction:column;gap:8px}
+.primary{height:44px;border:0;border-radius:10px;background:var(--plum);color:#fff;font-weight:600;font-size:15.5px;cursor:pointer;padding:0 16px}
+.primary:disabled{opacity:.45;cursor:default}
+.secondary{height:40px;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);font-weight:500;cursor:pointer;padding:0 14px}
+.secondary:disabled{opacity:.45;cursor:default}
+.row2{display:flex;gap:8px}
+.row2>*{flex:1}
+.setting{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-top:6px}
+.setting input[type=range]{flex:1;accent-color:var(--plum)}
+.setting input[type=checkbox]{width:18px;height:18px;accent-color:var(--red)}
+
+.stage{display:grid;grid-template-columns:316px 316px minmax(0,1fr);gap:18px;margin-top:16px;align-items:start}
+@media (max-width:1100px){.stage{grid-template-columns:1fr 1fr}.graphcol{grid-column:1/-1}}
+@media (max-width:700px){.stage{grid-template-columns:1fr}}
+.colhead{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 8px 4px}
+.colhead.on{color:var(--plum)}
+.phone{width:100%;max-width:316px;height:600px;margin:0 auto;border:9px solid var(--phone);border-radius:34px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .25s}
+.phone.on{box-shadow:0 0 0 4px var(--plum)}
+.ph-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.ph-head b{display:block;font-size:15px}
+.ph-head span{font-size:12px;color:var(--muted)}
+.ph-body{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.empty{margin:auto;text-align:center;color:var(--muted);font-size:14px;padding:20px}
+.bubble{max-width:250px;background:var(--panel);border-radius:4px 14px 14px 14px;padding:10px 12px;font-size:14px;align-self:flex-start;display:flex;flex-direction:column;gap:6px}
+.bubble.me{align-self:flex-end;background:var(--plum-soft);border-radius:14px 4px 14px 14px}
+.bubble .btn{height:40px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);cursor:pointer;font-weight:500;font-size:14px}
+.bubble .btn.main{background:var(--plum);border-color:var(--plum);color:#fff;font-weight:600}
+.bubble .btn:disabled{opacity:.5;cursor:default}
+.hi{font-size:13px;color:var(--muted)}
+.card{background:var(--panel);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;align-self:flex-start}
+.b-verified{background:var(--teal-soft);color:var(--teal)}
+.b-unconfirmed{background:var(--amber-soft);color:var(--amber)}
+.b-customer{background:var(--blue-soft);color:var(--blue)}
+.b-none{background:var(--grey-soft);color:var(--muted)}
+.b-flag{background:var(--red-soft);color:var(--red)}
+.big{font-size:19px;font-weight:700;line-height:1.2}
+.code{font-size:20px;font-weight:600;color:var(--plum)}
+.result{text-align:center;align-items:center;padding:18px 12px}
+.ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+.graph{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;transition:box-shadow .25s}
+.graph.on{box-shadow:0 0 0 4px var(--plum)}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px}
+@media (max-width:700px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.metric{background:var(--bg);border-radius:10px;padding:8px 10px}
+.metric b{display:block;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}
+.metric span{font-size:12px;color:var(--muted);line-height:1.25;display:block}
+.mapwrap{overflow-x:auto;border-radius:10px}
+.mapwrap svg{display:block;width:100%;min-width:560px;height:auto;background:var(--map);border-radius:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin:8px 2px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:6px}
+@media (max-width:700px){.split{grid-template-columns:1fr}}
+.info,.log{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13.5px;min-height:150px}
+.info h3,.log h3{margin:0 0 6px;font-size:14px}
+.log ol{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:6px;max-height:210px;overflow:auto}
+.log li{border-left:3px solid var(--line);padding-left:8px}
+.log li.new{border-color:var(--plum)}
+.info ul{margin:4px 0 0;padding-left:18px}
+@keyframes pop{0%{r:9;opacity:.2}100%{opacity:1}}
+.pop{animation:pop .6s ease-out}
+@keyframes pulse{0%{stroke-width:0;stroke-opacity:.6}100%{stroke-width:10;stroke-opacity:0}}
+.pulse{animation:pulse 1.2s ease-out 2}
+footer{margin-top:22px;color:var(--muted);font-size:12.5px}
+@media (prefers-reduced-motion:reduce){.pop,.pulse{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Valmo Pata · live demo</h1>
+    <p>Place an order, let the customer respond, let the rider deliver, and watch the address graph learn where each home is. Every DIGIPIN shown is computed live from India Post's specification.</p>
+  </div>
+  <div class="steps" aria-label="Demo progress">
+    <span class="step" id="s1">1 · Customer</span><span class="step" id="s2">2 · Rider</span><span class="step" id="s3">3 · Address graph</span>
+  </div>
+</header>
+
+<section class="controls" aria-label="Place an order">
+  <div>
+    <label class="lbl" for="home">Who is ordering</label>
+    <select id="home"></select>
+    <div class="chips" id="homeNote"></div>
+  </div>
+  <div>
+    <label class="lbl" for="addr">Address as the customer types it (edit freely)</label>
+    <div class="textrow"><input type="text" id="addr" autocomplete="off"><button class="iconbtn" id="variant" type="button">Another way of writing it</button></div>
+    <div class="chips" id="tokens"></div>
+  </div>
+  <div class="actions">
+    <button class="primary" id="place" type="button">Place order</button>
+    <div class="row2"><button class="secondary" id="auto" type="button">Run 10 orders automatically</button><button class="secondary" id="reset" type="button">Reset</button></div>
+    <div class="setting"><label for="sigma">Rider GPS error</label><input type="range" id="sigma" min="2" max="25" value="6"><output id="sigmaOut" class="mono">±6 m</output></div>
+    <label class="setting"><input type="checkbox" id="corner"> Next rider taps “delivered” from the lane corner</label>
+  </div>
+</section>
+
+<section class="stage">
+  <div>
+    <p class="colhead" id="h1">Step 1 · Customer</p>
+    <div class="phone" id="custPhone">
+      <div class="ph-head"><div class="avatar">V</div><div><b>Valmo by Meesho</b><span>Order updates · illustrative chat</span></div></div>
+      <div class="ph-body" id="custBody" aria-live="polite"></div>
+    </div>
+  </div>
+  <div>
+    <p class="colhead" id="h2">Step 2 · Rider</p>
+    <div class="phone" id="riderPhone">
+      <div class="ph-head"><div class="avatar" style="background:var(--ink)">R</div><div><b>Valmo Rider</b><span>Kalyanpur hub · Gali 3 beat</span></div></div>
+      <div class="ph-body" id="riderBody" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="graphcol">
+    <p class="colhead" id="h3">Step 3 · Address graph</p>
+    <div class="graph" id="graphBox">
+      <div class="metrics" id="metrics"></div>
+      <div class="mapwrap"><svg id="map" viewBox="-115 -48 245 96" role="img" aria-label="Map of Gali 3 with delivery taps and pins"></svg></div>
+      <div class="legend">
+        <span><i style="background:var(--teal)"></i>Verified pin</span>
+        <span><i style="border:2px solid var(--amber)"></i>Unconfirmed pin</span>
+        <span><i style="border:2px solid var(--blue)"></i>Pin from customer</span>
+        <span><i style="background:var(--plum);width:7px;height:7px"></i>Rider tap</span>
+        <span><i style="background:var(--blue);width:7px;height:7px;border-radius:1px"></i>Customer shared</span>
+        <span><i style="background:var(--red);width:7px;height:7px"></i>Flagged tap (ignored)</span>
+        <span>Grid squares = DIGIPIN cells, ~3.5 m</span>
+      </div>
+      <div class="split">
+        <div class="info" id="info"><h3>Pin details</h3><span style="color:var(--muted)">Click any pin on the map.</span></div>
+        <div class="log"><h3>What just happened</h3><ol id="log"></ol></div>
+      </div>
+    </div>
+  </div>
+</section>
+<footer>Team Prod Gods, IIT Kanpur · Meesho DICE S3 · Valmo Bharosa. Homes and riders are simulated; the matching rules, pin verification and DIGIPIN encoding are the real prototype logic.</footer>
+</div>
+
+<script>
+/* Valmo Pata engine — DIGIPIN + address graph + scale simulator.
+   Runs in the browser (window.Pata) and in Node (module.exports). */
+(function (root) {
+'use strict';
+
+// ───────────────────────── DIGIPIN (India Post spec) ─────────────────────────
+const GRID = [['F','C','9','8'],['J','3','2','7'],['K','4','5','6'],['L','M','P','T']];
+const BOUNDS = { minLat: 2.5, maxLat: 38.5, minLon: 63.5, maxLon: 99.5 };
+const POS = {}; GRID.forEach((r, i) => r.forEach((c, j) => { POS[c] = [i, j]; }));
+
+function encode(lat, lon, level = 10) {
+  if (!(lat >= BOUNDS.minLat && lat <= BOUNDS.maxLat && lon >= BOUNDS.minLon && lon <= BOUNDS.maxLon))
+    throw new Error('Coordinates are outside the DIGIPIN area (lat 2.5–38.5, lon 63.5–99.5)');
+  let { minLat, maxLat, minLon, maxLon } = BOUNDS, code = '';
+  for (let l = 1; l <= level; l++) {
+    const latDiv = (maxLat - minLat) / 4, lonDiv = (maxLon - minLon) / 4;
+    let row = 3 - Math.floor((lat - minLat) / latDiv);
+    let col = Math.floor((lon - minLon) / lonDiv);
+    row = Math.max(0, Math.min(3, row)); col = Math.max(0, Math.min(3, col));
+    code += GRID[row][col];
+    if ((l === 3 || l === 6) && l < level) code += '-';
+    maxLat = minLat + latDiv * (4 - row); minLat = minLat + latDiv * (3 - row);
+    minLon = minLon + lonDiv * col; maxLon = minLon + lonDiv;
+  }
+  return code;
+}
+function cellBounds(code) {
+  const s = String(code).replace(/-/g, '').toUpperCase().trim();
+  if (!s.length || s.length > 10) throw new Error('A DIGIPIN has 1–10 characters');
+  let { minLat, maxLat, minLon, maxLon } = BOUNDS;
+  for (const ch of s) {
+    const p = POS[ch]; if (!p) throw new Error('"' + ch + '" is not a DIGIPIN character');
+    const latDiv = (maxLat - minLat) / 4, lonDiv = (maxLon - minLon) / 4, [row, col] = p;
+    const nMin = minLat + latDiv * (3 - row), nMax = minLat + latDiv * (4 - row);
+    minLat = nMin; maxLat = nMax; minLon = minLon + lonDiv * col; maxLon = minLon + lonDiv;
+  }
+  return { minLat, maxLat, minLon, maxLon, level: s.length };
+}
+function decode(code) {
+  const b = cellBounds(code);
+  return { lat: (b.minLat + b.maxLat) / 2, lon: (b.minLon + b.maxLon) / 2, bounds: b };
+}
+// integer cell index at a level — two codes are neighbours if both indices differ by ≤1
+function cellIndex(lat, lon, level = 10) {
+  const n = Math.pow(4, level);
+  return [Math.floor((lon - BOUNDS.minLon) / (36 / n)), Math.floor((lat - BOUNDS.minLat) / (36 / n))];
+}
+const DIGIPIN = { encode, decode, cellBounds, cellIndex, BOUNDS };
+
+// ───────────────────────── geometry (local metric frame) ─────────────────────
+const LAT0 = 26.4958, LON0 = 80.2652;          // Kalyanpur, Kanpur
+const M_LAT = 110850, M_LON = 111320 * Math.cos(LAT0 * Math.PI / 180);
+const toLL = (x, y) => ({ lat: LAT0 + y / M_LAT, lon: LON0 + x / M_LON });
+const toXY = (lat, lon) => ({ x: (lon - LON0) * M_LON, y: (lat - LAT0) * M_LAT });
+const distM = (a, b) => Math.hypot((a.lat - b.lat) * M_LAT, (a.lon - b.lon) * M_LON);
+
+// ───────────────────────── RNG ───────────────────────────────────────────────
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0; let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const gauss = rng => Math.sqrt(-2 * Math.log(rng() + 1e-12)) * Math.cos(2 * Math.PI * rng());
+const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
+function poisson(rng, l) { let L = Math.exp(-l), k = 0, p = 1; do { k++; p *= rng(); } while (p > L); return k - 1; }
+function poissonBig(rng, l) { return l > 30 ? Math.max(0, Math.round(l + Math.sqrt(l) * gauss(rng))) : poisson(rng, l); }
+
+// ───────────────────────── text normalisation ────────────────────────────────
+const DEV = {
+  'हनुमान':'hanuman','मंदिर':'mandir','शिव':'shiv','दुर्गा':'durga','एसबीआई':'sbi','एटीएम':'atm',
+  'पीएनबी':'pnb','बैंक':'bank','सरकारी':'sarkari','स्कूल':'school','पानी':'pani','की':'ki','टंकी':'tanki',
+  'मस्जिद':'masjid','गुप्ता':'gupta','किराना':'kirana','शर्मा':'sharma','मेडिकल':'medical','नेहरू':'nehru',
+  'पार्क':'park','बड़ा':'bada','चौराहा':'chauraha','के':'ke','पास':'paas','सामने':'samne','पीछे':'peeche',
+  'गली':'gali','वाला':'wala','घर':'ghar','कल्याणपुर':'kalyanpur','आवास':'awas','विकास':'vikas','कानपुर':'kanpur'
+};
+const SYN = { nr:'near', temple:'mandir', vidyalaya:'school', govt:'sarkari', government:'sarkari',
+  lane:'gali', street:'gali', opposite:'opp', samne:'opp', pas:'paas', mandi:'mandir' };
+const STOP = new Set(['near','paas','ke','ki','ka','opp','behind','peeche','wala','wali','ghar','house',
+  'kanpur','up','flat','no','h','hno','the','of','and','gate','in','to']);
+
+function normalize(text) {
+  let t = String(text);
+  for (const [d, l] of Object.entries(DEV)) t = t.split(d).join(' ' + l + ' ');
+  t = t.toLowerCase().replace(/\b(gali|lane|street)\s*(no\.?\s*)?(\d+)/g, ' gali$3 ')
+       .replace(/h\.?\s?no\.?/g, ' ').replace(/([a-z])-(\d)/g, '$1$2')
+       .replace(/[^a-z0-9\u0900-\u097f]+/g, ' ');
+  const out = [];
+  for (let w of t.split(/\s+/)) {
+    if (!w) continue; w = SYN[w] || w;
+    if (STOP.has(w) || /^\d{6}$/.test(w)) continue;   // pincode travels as a structured field
+    if (!out.includes(w)) out.push(w);
+  }
+  return out;
+}
+function lev1(a, b) { // is edit distance ≤ 1 ?
+  if (a === b) return true;
+  const la = a.length, lb = b.length; if (Math.abs(la - lb) > 1) return false;
+  let i = 0, j = 0, e = 0;
+  while (i < la && j < lb) {
+    if (a[i] === b[j]) { i++; j++; continue; }
+    if (++e > 1) return false;
+    if (la > lb) i++; else if (lb > la) j++;
+    else if (a[i] === b[j + 1] && a[i + 1] === b[j]) { i += 2; j += 2; } // transposition
+    else { i++; j++; }
+  }
+  return e + (la - i) + (lb - j) <= 1;
+}
+const hasDigit = t => /\d/.test(t) && !/^gali\d+$/.test(t);
+
+// ───────────────────────── synthetic neighbourhood ───────────────────────────
+const LANDMARKS = [
+  ['Hanuman Mandir','हनुमान मंदिर'],['Hanuman Mandir','हनुमान मंदिर'],['Hanuman Mandir','हनुमान मंदिर'],
+  ['Shiv Mandir','शिव मंदिर'],['Shiv Mandir','शिव मंदिर'],['Durga Mandir','दुर्गा मंदिर'],
+  ['SBI ATM','एसबीआई एटीएम'],['PNB Bank','पीएनबी बैंक'],['Govt School','सरकारी स्कूल'],
+  ['Pani Ki Tanki','पानी की टंकी'],['Masjid','मस्जिद'],['Gupta Kirana','गुप्ता किराना'],
+  ['Sharma Medical','शर्मा मेडिकल'],['Nehru Park','नेहरू पार्क'],['Bada Chauraha','बड़ा चौराहा'],
+  ['SBI ATM','एसबीआई एटीएम']
+];
+const APT_NAMES = ['Shanti Apartment','Ganga Enclave','Sai Residency','Krishna Towers','Laxmi Heights',
+  'Om Residency','Balaji Apartment','Green Park Society','Shiv Shakti Apartment','Yamuna Enclave',
+  'Royal Residency','Tulsi Apartment','Ashiyana Heights','Gokul Dham','Sunrise Apartment'];
+const GATES = ['blue','green','red','black','yellow','white','brown'];
+const PINS = [
+  { code: '208017', name: 'Kalyanpur', dev: 'कल्याणपुर' },
+  { code: '208026', name: 'Awas Vikas', dev: 'आवास विकास' }
+];
+
+function buildWorld(cfg, rng) {
+  const W = 1100, LANES = 9, GAP = 90, split = 560;
+  const lanes = [], roads = [0, 370, 740, 1100], buildings = [], households = [];
+  for (let i = 0; i < LANES; i++) lanes.push({ id: i, y: 45 + GAP * i, name: 'Gali ' + (i + 1), block: 'ABCDEFGHJ'[i] });
+  const landmarks = LANDMARKS.map((l, i) => {
+    const lane = lanes[Math.floor(rng() * LANES)];
+    return { id: i, name: l[0], dev: l[1], x: 30 + rng() * (W - 60), y: lane.y + (rng() < .5 ? -20 : 20) };
+  });
+  let hn = {};
+  for (const lane of lanes) for (const side of [-1, 1]) {
+    let x = 8;
+    while (x < W - 12) {
+      if (roads.some(r => Math.abs(x - r) < 10)) { x += 12; continue; }
+      const apt = rng() < cfg.aptShare;
+      const w = apt ? 34 : 9 + rng() * 3, depth = apt ? 26 : 12;
+      if (roads.some(r => r > x && r < x + w + 4)) { x += 12; continue; }
+      const cx = x + w / 2, doorY = lane.y + side * 7, cy = lane.y + side * (7 + depth / 2);
+      const pin = cx < split ? PINS[0] : PINS[1];
+      const b = { id: buildings.length, apt, x, w, depth, side, cx, cy, lane, pin,
+        door: toLL(cx, doorY), gate: pick(rng, GATES), hh: [] };
+      b.doorXY = { x: cx, y: doorY };
+      // nearest landmark in same pincode (customers don't cite across the boundary)
+      let best = null, bd = 1e9;
+      for (const lm of landmarks) { if ((lm.x < split) !== (cx < split)) continue;
+        const d = Math.hypot(lm.x - cx, lm.y - cy); if (d < bd) { bd = d; best = lm; } }
+      b.landmark = best;
+      if (apt) {
+        b.name = pick(rng, APT_NAMES); const floors = 3 + Math.floor(rng() * 6), per = 2 + Math.floor(rng() * 3);
+        b.floors = floors;
+        for (let f = 1; f <= floors; f++) for (let k = 1; k <= per; k++) b.hh.push({ flat: String(f * 100 + k), floor: f });
+      } else {
+        hn[lane.block] = (hn[lane.block] || 100) + 1 + Math.floor(rng() * 3);
+        b.houseNo = lane.block + '-' + hn[lane.block];
+        b.floors = rng() < .3 ? 2 : 1;
+        for (let f = 1; f <= b.floors; f++) b.hh.push({ floor: f, flat: b.floors > 1 ? (f === 1 ? 'ground floor' : 'first floor') : null });
+      }
+      for (const h of b.hh) {
+        h.id = households.length; h.bldg = b; h.weight = Math.exp(gauss(rng) * 1.3 - 1.2);
+        h.devPref = rng() < cfg.devShare; h.saved = null; h.cust = 'C' + h.id;
+        households.push(h);
+      }
+      buildings.push(b);
+      x += w + 2 + rng() * 4;
+    }
+  }
+  return { W, H: 45 + GAP * (LANES - 1) + 45, lanes, roads, split, landmarks, buildings, households };
+}
+
+function typo(rng, w) {
+  if (w.length < 5 || rng() > 0.05) return w;
+  const i = 1 + Math.floor(rng() * (w.length - 2));
+  return w.slice(0, i) + w[i + 1] + w[i] + w.slice(i + 2);
+}
+function writeAddress(h, rng, cfg) {
+  const b = h.bldg, lm = b.landmark, dev = h.devPref ? rng() < .8 : rng() < .1;
+  const loc = dev ? b.pin.dev : b.pin.name;
+  const rel = dev ? pick(rng, ['के पास', 'के सामने', 'के पीछे']) : pick(rng, ['near', 'nr', 'opp', 'behind', 'ke paas', 'samne']);
+  const lmT = dev ? lm.dev + ' ' + rel : (rel === 'ke paas' || rel === 'samne' ? lm.name + ' ' + rel : rel + ' ' + lm.name);
+  const lane = dev ? 'गली ' + (b.lane.id + 1) : pick(rng, [b.lane.name, 'Lane ' + (b.lane.id + 1), 'gali no ' + (b.lane.id + 1)]);
+  const m = cfg.messiness; // 0..1 shifts weight toward vague templates
+  let s;
+  const r = rng();
+  if (b.apt) {
+    if (r < .45 - .3 * m) s = `Flat ${h.flat}, ${b.name}, ${lane}, ${loc}`;
+    else if (r < .7 - .25 * m) s = `${b.name} ${h.flat}, ${lmT}`;
+    else if (r < .88) s = `${b.name}, ${loc}`;                       // flat number dropped
+    else s = `${lmT}, ${loc}`;                                       // landmark only
+  } else {
+    const fl = h.flat ? ' ' + h.flat : '';
+    if (r < .4 - .3 * m) s = `H.No ${b.houseNo}${fl}, ${lane}, ${lmT}, ${loc}, Kanpur`;
+    else if (r < .6 - .2 * m) s = `${b.houseNo}${fl} ${loc}`;
+    else if (r < .8) s = `${b.gate} gate wala ghar, ${lane}, ${loc}`;
+    else s = `${lmT}, ${loc}`;
+  }
+  return s.split(' ').map(w => typo(rng, w)).join(' ');
+}
+
+// ───────────────────────── address graph ─────────────────────────────────────
+class AddressGraph {
+  constructor(cfg) { this.cfg = cfg; this.nodes = []; this.pins = {}; }
+  pinState(pin) {
+    return this.pins[pin] || (this.pins[pin] = { idx: new Map(), df: new Map(), n: 0, vocab: new Set() });
+  }
+  idf(ps, t) { return Math.log(1 + (ps.n + 1) / (1 + (ps.df.get(t) || 0))); }
+  canon(ps, toks) { // snap typos onto known vocabulary
+    return toks.map(t => {
+      if (ps.vocab.has(t) || t.length < 5 || hasDigit(t)) return t;
+      for (const v of ps.vocab) if (lev1(t, v)) return v;
+      return t;
+    });
+  }
+  scoreSet(ps, toks, set) {
+    let inter = 0, ow = 0, uni = 0;
+    for (const t of toks) { const w = this.idf(ps, t); ow += w; if (set.has(t)) inter += w; }
+    uni = ow; for (const t of set.keys()) if (!toks.includes(t)) uni += this.idf(ps, t);
+    let s = 0.7 * (inter / (ow || 1)) + 0.3 * (inter / (uni || 1));
+    const keys = [...set.keys()];
+    const on = toks.filter(hasDigit), nn = keys.filter(hasDigit);
+    if (on.length && nn.length && !on.some(t => set.has(t))) s *= 0.25;   // conflicting house/flat numbers
+    const og = toks.filter(t => /^gali\d+$/.test(t)), ng = keys.filter(t => /^gali\d+$/.test(t));
+    if (this.cfg.memberMatch && og.length && ng.length && !og.some(t => set.has(t))) s *= 0.3; // different lanes
+    return s;
+  }
+  // union mode: compare to every word the node has ever seen (drifts as nodes grow)
+  // member mode: compare to each past text separately and keep the best
+  score(ps, toks, node, out) {
+    if (!this.cfg.memberMatch) { if (out) out.set = node.tok; return this.scoreSet(ps, toks, node.tok); }
+    let best = 0, bset = null;
+    for (const m of node.members.values()) { const s = this.scoreSet(ps, toks, m); if (s > best) { best = s; bset = m; } }
+    if (out) out.set = bset || node.tok;
+    return best;
+  }
+  // text may only link an order to a node if they share something identifying:
+  // a house/flat number, or a token rare enough in this pincode to act as a name
+  specific(ps, toks, node) {
+    if (!this.cfg.specificity) return true;
+    const rare = Math.log(1 + (ps.n + 1) / (1 + Math.max(2, ps.n * 0.02)));
+    const o = {}; this.score(ps, toks, node, o);
+    return toks.some(t => o.set.has(t) && (/^[a-z]?\d+$/.test(t) || this.idf(ps, t) >= rare));
+  }
+  match(order) {
+    const ps = this.pinState(order.pin);
+    const toks = this.canon(ps, normalize(order.text));
+    order.tokens = toks;
+    // saved-address shortcut (same customer, same pincode)
+    const last = order.hh.saved;
+    if (last && last.pin === order.pin) {
+      const s = this.score(ps, toks, last);
+      if (s >= this.cfg.threshold * 0.6) return { node: last, score: s, via: 'saved' };
+    }
+    // blocking: candidates share a token that isn't in >25% of nodes
+    const cand = new Map();
+    for (const t of toks) {
+      const set = ps.idx.get(t); if (!set || set.size > Math.max(40, ps.n * .25)) continue;
+      const w = this.idf(ps, t);
+      for (const id of set) cand.set(id, (cand.get(id) || 0) + w);
+    }
+    const top = [...cand.entries()].sort((a, b) => b[1] - a[1]).slice(0, 80);
+    let best = null, bs = 0;
+    for (const [id] of top) { const s = this.score(ps, toks, this.nodes[id]); if (s > bs) { bs = s; best = this.nodes[id]; } }
+    if (best && bs >= this.cfg.threshold && this.specific(ps, toks, best)) return { node: best, score: bs, via: 'text' };
+    if (best && bs >= this.cfg.threshold) return { node: null, score: bs, via: 'vague' };
+    return { node: null, score: bs, via: 'new' };
+  }
+  create(order) {
+    const node = { id: this.nodes.length, pin: order.pin, tok: new Map(), members: new Map(), texts: [], obs: [], cons: null, code: null, orders: 0 };
+    this.nodes.push(node); this.pinState(order.pin).n++;
+    return node;
+  }
+  absorb(node, order) {
+    const ps = this.pinState(node.pin);
+    for (const t of order.tokens) {
+      if (!node.tok.has(t)) {
+        ps.df.set(t, (ps.df.get(t) || 0) + 1); ps.vocab.add(t);
+        if (!ps.idx.has(t)) ps.idx.set(t, new Set()); ps.idx.get(t).add(node.id);
+      }
+      node.tok.set(t, (node.tok.get(t) || 0) + 1);
+    }
+    const key = order.tokens.join(' ');
+    if (!node.members.has(key) && node.members.size < 24) node.members.set(key, new Map(order.tokens.map(t => [t, 1])));
+    if (node.texts.length < 12) node.texts.push(order.text);
+    node.orders++;
+  }
+  observe(node, fix) {
+    node.obs.push(fix);
+    node.cons = consensus(node.obs, this.cfg.robust);
+    node.code = encode(node.cons.lat, node.cons.lon);
+    node.verified = node.cons.inliers >= 2 && node.cons.spread <= 15;
+  }
+}
+function median(a) { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+function consensus(obs, robust) {
+  if (!robust) return { lat: obs.reduce((s, o) => s + o.lat, 0) / obs.length, lon: obs.reduce((s, o) => s + o.lon, 0) / obs.length, spread: 0, inliers: obs.length };
+  const med = { lat: median(obs.map(o => o.lat)), lon: median(obs.map(o => o.lon)) };
+  const d = obs.map(o => distM(o, med)), md = median(d);
+  const cut = Math.max(20, 3 * md);
+  const inl = obs.filter((o, i) => d[i] <= cut);
+  const use = inl.length ? inl : obs;
+  const c = { lat: use.reduce((s, o) => s + o.lat, 0) / use.length, lon: use.reduce((s, o) => s + o.lon, 0) / use.length };
+  c.spread = median(use.map(o => distM(o, c))); c.inliers = use.length;
+  return c;
+}
+
+// ───────────────────────── simulation ────────────────────────────────────────
+const DEFAULTS = {
+  seed: 7, days: 60, ordersPerDay: 220, gpsSigma: 9, fakeRate: 0.06, threshold: 0.55,
+  aptShare: 0.12, devShare: 0.2, messiness: 0.5, wrongPinRate: 0.03, robust: true, specificity: true, memberMatch: false, geoVeto: false
+};
+
+function simulate(userCfg = {}) {
+  const cfg = Object.assign({}, DEFAULTS, userCfg);
+  const rng = mulberry32(cfg.seed);
+  const world = buildWorld(cfg, rng);
+  const graph = new AddressGraph(cfg);
+  const hh = world.households;
+  const cum = []; let tot = 0; for (const h of hh) { tot += h.weight; cum.push(tot); }
+  const draw = () => { const r = rng() * tot; let lo = 0, hi = cum.length - 1;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] < r) lo = m + 1; else hi = m; } return hh[lo]; };
+
+  const series = [], trace = [], fixes = [];
+  const lastDoor = {};
+  const agg = { orders: 0, hit: 0, hitRight: 0, hitWrongBldg: 0, hitFar: 0, hitSameBldgOtherHH: 0,
+    newNodes: 0, wrongPin: 0, devOrders: 0, devNew: 0, latOrders: 0, latNew: 0,
+    fakeFix: 0, vetoed: 0, hitV: 0, hitVRight: 0, hitU: 0, hitURight: 0, fixCell: 0, fixNbr: 0, fixL9: 0, fixCount: 0, repeatNew: 0, repeatOrders: 0 };
+
+  for (let day = 1; day <= cfg.days; day++) {
+    const n = poissonBig(rng, cfg.ordersPerDay);
+    const d = { day, orders: 0, hit: 0, right: 0, wrong: 0 };
+    for (let k = 0; k < n; k++) {
+      const h = draw(), b = h.bldg;
+      const repeat = !!h.seen; h.seen = (h.seen || 0) + 1;
+      let text = (h.savedText && rng() < .65) ? h.savedText : writeAddress(h, rng, cfg);
+      h.savedText = h.savedText || text;
+      let pin = b.pin.code; const wrongPin = rng() < cfg.wrongPinRate;
+      if (wrongPin) pin = b.pin.code === PINS[0].code ? PINS[1].code : PINS[0].code;
+      const order = { text, pin, hh: h, day };
+      const m = graph.match(order);
+      const isDev = /[\u0900-\u097f]/.test(text);
+
+      // ── what the graph "knows" before dispatch ──
+      let outcome = 'new';
+      if (m.node && m.node.cons) {
+        const nodeBldg = majority(m.node.obs.map(o => o.bldg));
+        const err = distM(m.node.cons, b.door);
+        agg.hit++; d.hit++;
+        if (nodeBldg !== b.id) { agg.hitWrongBldg++; d.wrong++; outcome = 'wrong-building'; }
+        else if (err > 25) { agg.hitFar++; d.wrong++; outcome = 'pin-drift'; }
+        else { agg.hitRight++; d.right++; outcome = 'correct';
+          if (b.apt && majority(m.node.obs.map(o => o.hh)) !== h.id) agg.hitSameBldgOtherHH++; }
+        order.pred = m.node.code; order.err = err; order.verified = !!m.node.verified;
+        const ok = outcome === 'correct';
+        if (m.node.verified) { agg.hitV++; if (ok) agg.hitVRight++; } else { agg.hitU++; if (ok) agg.hitURight++; }
+        if (m.node.verified) d.hitV = (d.hitV || 0) + 1, d.rightV = (d.rightV || 0) + (ok ? 1 : 0);
+      }
+      if (!m.node) agg.newNodes++;
+      if (repeat) { agg.repeatOrders++; if (!m.node) agg.repeatNew++; }
+      if (wrongPin) agg.wrongPin++;
+      if (isDev) { agg.devOrders++; if (!m.node && repeat) agg.devNew++; } else { agg.latOrders++; if (!m.node && repeat) agg.latNew++; }
+
+      // ── delivery: rider taps "delivered", GPS captured ──
+      let fix, fake = false;
+      if (rng() < cfg.fakeRate) {
+        fake = true; agg.fakeFix++;
+        if (rng() < .6 || !lastDoor[b.pin.code]) { // marked from the main road at the lane mouth
+          const road = world.roads.reduce((a, r) => Math.abs(r - b.cx) < Math.abs(a - b.cx) ? r : a, world.roads[0]);
+          fix = toLL(road + gauss(rng) * 6, b.lane.y + gauss(rng) * 6);
+        } else fix = Object.assign({}, lastDoor[b.pin.code]); // batch-marked at previous drop
+      } else {
+        const s = cfg.gpsSigma * (b.apt ? 1.5 : 1);
+        fix = toLL(b.doorXY.x + gauss(rng) * s, b.doorXY.y + gauss(rng) * s);
+      }
+      fix = { lat: fix.lat, lon: fix.lon, bldg: b.id, hh: h.id, fake };
+      let node = m.node, vetoed = false;
+      if (node && cfg.geoVeto && node.cons && node.cons.inliers >= 2 && distM(fix, node.cons) > 40) { node = null; vetoed = true; agg.vetoed++; }
+      if (!node) node = graph.create(order);
+      graph.absorb(node, order);
+      if (!fake) {
+        agg.fixCount++;
+        const [ax, ay] = cellIndex(fix.lat, fix.lon), [bx, by] = cellIndex(b.door.lat, b.door.lon);
+        if (ax === bx && ay === by) agg.fixCell++;
+        if (Math.abs(ax - bx) <= 1 && Math.abs(ay - by) <= 1) agg.fixNbr++;
+        const [cx, cy] = cellIndex(fix.lat, fix.lon, 9), [dx, dy] = cellIndex(b.door.lat, b.door.lon, 9);
+        if (cx === dx && cy === dy) agg.fixL9++;
+      }
+      lastDoor[b.pin.code] = b.door;
+      graph.observe(node, fix);
+      fixes.push({ lat: fix.lat, lon: fix.lon, fake, node: node.id, bldg: b.id });
+      h.saved = node;
+      agg.orders++; d.orders++;
+      if (day === cfg.days || trace.length < 0) {}
+      trace.push({ day, text, pin, wrongPin, vetoed, via: m.via, score: m.score, outcome, pred: order.pred || null,
+        err: order.err, verified: !!order.verified, truth: encode(b.door.lat, b.door.lon), node: node.id, bldg: b.id });
+      if (trace.length > (cfg.traceKeep || 400)) trace.shift();
+    }
+    series.push(d);
+  }
+  return { cfg, world, graph, series, trace, fixes, agg, metrics: evaluate(world, graph, agg) };
+}
+function majority(arr) { const c = new Map(); let b = null, bc = 0;
+  for (const v of arr) { const k = (c.get(v) || 0) + 1; c.set(v, k); if (k > bc) { bc = k; b = v; } } return b; }
+
+// ───────────────────────── evaluation ────────────────────────────────────────
+function evaluate(world, graph, agg) {
+  const B = world.buildings;
+  const nodes = graph.nodes.filter(n => n.obs.length);
+  // purity / poisoning
+  let poisoned = 0, verified = 0, poisonedV = 0, impure = 0, multiObs = 0, consCell = 0, consNbr = 0, cons10 = 0, codeSplit = 0, pairs = 0;
+  for (const n of nodes) {
+    const mb = majority(n.obs.map(o => o.bldg)), bd = B[mb].door;
+    if (n.obs.some(o => o.bldg !== mb)) impure++;
+    const err = distM(n.cons, bd);
+    if (err > 25) poisoned++;
+    if (n.verified) { verified++; if (err > 25) poisonedV++; }
+    if (n.obs.length >= 3) {
+      multiObs++;
+      const [ax, ay] = cellIndex(n.cons.lat, n.cons.lon), [bx, by] = cellIndex(bd.lat, bd.lon);
+      if (ax === bx && ay === by) consCell++;
+      if (Math.abs(ax - bx) <= 1 && Math.abs(ay - by) <= 1) consNbr++;
+      if (err <= 10) cons10++;
+      // do honest fixes at the same door share one exact DIGIPIN?
+      const good = n.obs.filter(o => !o.fake && o.bldg === mb).map(o => encode(o.lat, o.lon));
+      for (let i = 0; i < good.length; i++) for (let j = i + 1; j < good.length; j++) { pairs++; if (good[i] !== good[j]) codeSplit++; }
+    }
+  }
+  // fragmentation: nodes per household that ordered
+  const perHH = new Map();
+  for (const n of nodes) for (const hid of new Set(n.obs.map(o => o.hh))) perHH.set(hid, (perHH.get(hid) || 0) + 1);
+  const ordered = world.households.filter(h => h.seen);
+  const split = ordered.filter(h => (perHH.get(h.id) || 0) > 1).length;
+  const oneTime = ordered.filter(h => h.seen === 1).length;
+  // vertical collapse — distinct households in apartments per consensus L10 code
+  const aptHH = ordered.filter(h => h.bldg.apt);
+  const aptB = new Set(aptHH.map(h => h.bldg.id));
+  const flatsPerBldg = aptB.size ? aptHH.length / aptB.size : 0;
+  const pct = (a, b) => b ? a / b : 0;
+  return {
+    orders: agg.orders, nodes: nodes.length, households: ordered.length,
+    coverage: pct(agg.hit, agg.orders),
+    coverageVerified: pct(agg.hitV, agg.orders), accVerified: pct(agg.hitVRight, agg.hitV), accUnverified: pct(agg.hitURight, agg.hitU),
+    hitAccuracy: pct(agg.hitRight, agg.hit),
+    wrongBuilding: pct(agg.hitWrongBldg, agg.hit),
+    pinDrift: pct(agg.hitFar, agg.hit),
+    fixSameCell: pct(agg.fixCell, agg.fixCount), fixNbr: pct(agg.fixNbr, agg.fixCount), fixL9: pct(agg.fixL9, agg.fixCount),
+    pairSplit: pct(codeSplit, pairs),
+    consSameCell: pct(consCell, multiObs), consNbr: pct(consNbr, multiObs), cons10: pct(cons10, multiObs),
+    poisoned: pct(poisoned, nodes.length), poisonedVerified: pct(poisonedV, verified), impure: pct(impure, nodes.length),
+    splitHH: pct(split, ordered.length), nodesPerHH: pct(nodes.length, ordered.length),
+    repeatMiss: pct(agg.repeatNew, agg.repeatOrders),
+    devMiss: pct(agg.devNew, agg.devOrders), latMiss: pct(agg.latNew, agg.latOrders),
+    oneTime: pct(oneTime, ordered.length),
+    wrongPin: pct(agg.wrongPin, agg.orders), vetoed: pct(agg.vetoed, agg.orders),
+    flatsPerBldg, sameBldgOtherFlat: pct(agg.hitSameBldgOtherHH, agg.hitRight)
+  };
+}
+
+const api = { DIGIPIN, normalize, simulate, DEFAULTS, toLL, toXY, distM, AddressGraph, consensus, lev1 };
+if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Pata = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function(){
+'use strict';
+const P = window.Pata, D = P.DIGIPIN, $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rnd = Math.random, gauss = () => Math.sqrt(-2 * Math.log(rnd() + 1e-12)) * Math.cos(2 * Math.PI * rnd());
+
+// ── local metric frame around a spot in Kalyanpur ──
+const BASE = P.toLL(420, 315);
+const MLAT = 110850, MLON = 111320 * Math.cos(BASE.lat * Math.PI / 180);
+const ll = (x, y) => ({ lat: BASE.lat + y / MLAT, lon: BASE.lon + x / MLON });
+const xy = p => ({ x: (p.lon - BASE.lon) * MLON, y: (p.lat - BASE.lat) * MLAT });
+const dist = (a, b) => P.distM(a, b);
+const SX = x => x, SY = y => -y;    // svg: metres, north up
+
+// ── the neighbourhood ──
+const HOMES = [
+  { id: 'H1', name: 'Priya · House C-231', door: { x: 0, y: 5 }, rect: [-5, 7, 10, 12], label: 'C-231',
+    v: ['H.No C-231, Gali 3, near Hanuman Mandir, Kalyanpur', 'C-231 Kalyanpur', 'c231 gali 3 hanuman mandir ke paas', 'हनुमान मंदिर के पास, गली 3, C-231'] },
+  { id: 'H2', name: 'Rakesh · House C-233 (next door)', door: { x: 12, y: 5 }, rect: [7, 7, 10, 12], label: 'C-233',
+    v: ['C-233, Gali 3, Kalyanpur', 'H.No C-233 near Hanuman Mandir'] },
+  { id: 'H3', name: 'Sunita · blue-gate house (west)', door: { x: -40, y: -5 }, rect: [-46, -19, 12, 12], label: 'blue gate',
+    v: ['blue gate wala ghar, Gali 3, Kalyanpur', 'blue gate house Gali 3'] },
+  { id: 'H4', name: 'Imran · another blue-gate house (east)', door: { x: 36, y: -5 }, rect: [30, -19, 12, 12], label: 'blue gate',
+    v: ['blue gate wala ghar, Gali 3, Kalyanpur'] },
+  { id: 'H5', name: 'Neha · Krishna Towers, flat 803', door: { x: 72, y: 5 }, rect: [58, 7, 28, 22], label: 'Krishna Towers', apt: true,
+    v: ['Flat 803, Krishna Towers, Gali 3', 'Krishna Towers 803, Masjid ke paas'] },
+  { id: 'H6', name: 'Arjun · Krishna Towers, flat 402', door: { x: 72, y: 5 }, apt: true,
+    v: ['Flat 402, Krishna Towers, Kalyanpur', 'Krishna Towers 402'] },
+  { id: 'H7', name: 'Meena · near Sharma Medical', door: { x: -66, y: 5 }, rect: [-72, 7, 12, 12], label: '',
+    v: ['Sharma Medical samne, Kalyanpur', 'शर्मा मेडिकल के सामने, कल्याणपुर'] }
+];
+const EXTRA_RECTS = [[-30, 7, 10, 12], [-18, 7, 10, 12], [22, 7, 10, 12], [36, 7, 10, 12], [-58, 7, 10, 12], [-84, -19, 12, 12],
+  [-28, -19, 10, 12], [-6, -19, 22, 12], [18, -19, 10, 12], [48, -19, 12, 12], [62, -19, 12, 12], [94, 7, 12, 12], [94, -19, 12, 12]];
+const LANDMARKS = [{ x: 5, y: -13, t: 'Hanuman Mandir' }, { x: 68, y: -13, t: 'Masjid' }, { x: -78, y: -13, t: 'Sharma Medical' }];
+const CORNERS = [{ x: -92, y: 0 }, { x: 112, y: 0 }];
+
+// ── state ──
+let S;
+function fresh() { return { nodes: [], saved: {}, orders: 0, dispatchedVerified: 0, flagged: 0, cur: null, log: [], sel: null, lastObs: null, busy: false }; }
+S = fresh();
+
+// ── address graph logic ──
+const idTokens = text => P.normalize(text).filter(t => /\d/.test(t) && !/^gali\d+$/.test(t));
+function nodeStatus(n) {
+  const good = n.obs.filter(o => !o.flagged);
+  if (!good.length) { n.cons = null; n.code = null; return 'none'; }
+  const c = P.consensus(good, true); n.cons = c; n.code = D.encode(c.lat, c.lon);
+  if (c.inliers >= 2 && c.spread <= 15 && good.some(o => o.src === 'rider')) return 'verified';
+  if (good.every(o => o.src === 'customer')) return 'customer';
+  return 'unconfirmed';
+}
+function refresh(n) { n.status = nodeStatus(n); return n.status; }
+function match(home, text) {
+  const s = S.saved[home.id];
+  if (s != null) return { node: S.nodes[s], via: 'Saved address of the same customer' };
+  const ids = idTokens(text);
+  for (const n of S.nodes) { const hit = ids.find(t => n.ids.has(t)); if (hit) return { node: n, via: `Shares the house/flat number “${hit}” with an earlier address` }; }
+  return { node: null, via: ids.length ? 'New house/flat number, so a new pin' : 'Nothing identifying in the text, so a new pin (text alone can’t be trusted)' };
+}
+function newNode(text) {
+  const n = { id: S.nodes.length + 1, texts: [], ids: new Set(), obs: [], status: 'none', cons: null, code: null, orders: 0 };
+  S.nodes.push(n); return n;
+}
+function attach(n, text, home) {
+  if (!n.texts.includes(text)) n.texts.push(text);
+  idTokens(text).forEach(t => n.ids.add(t));
+  S.saved[home.id] = S.nodes.indexOf(n);
+}
+
+// ── status vocabulary ──
+const BADGE = { verified: ['b-verified', 'Verified pin'], unconfirmed: ['b-unconfirmed', 'Unconfirmed pin'], customer: ['b-customer', 'Pin from customer'], none: ['b-none', 'No pin yet'] };
+const badge = st => `<span class="badge ${BADGE[st][0]}">${BADGE[st][1]}</span>`;
+
+// ── controls ──
+const homeSel = $('home');
+homeSel.innerHTML = HOMES.map((h, i) => `<option value="${i}">${esc(h.name)}</option>`).join('');
+let vIdx = 0;
+function setVariant() { const h = HOMES[+homeSel.value]; $('addr').value = h.v[vIdx % h.v.length]; showTokens(); showHomeNote(); }
+homeSel.onchange = () => { vIdx = 0; setVariant(); };
+$('variant').onclick = () => { vIdx++; setVariant(); };
+$('addr').oninput = showTokens;
+function showTokens() {
+  const t = P.normalize($('addr').value), ids = idTokens($('addr').value);
+  $('tokens').innerHTML = t.length ? 'Cleaned words: ' + t.map(w => `<span class="chip ${ids.includes(w) ? 'id' : 'plain'}">${esc(w)}</span>`).join('') +
+    (ids.length ? '' : ' <span style="color:var(--amber)">· nothing identifying</span>') : '';
+}
+function showHomeNote() {
+  const h = HOMES[+homeSel.value], s = S.saved[h.id];
+  $('homeNote').innerHTML = s != null ? `Has ordered before · ${badge(S.nodes[s].status)}` : 'First order from this customer';
+}
+$('sigma').oninput = () => $('sigmaOut').textContent = '±' + $('sigma').value + ' m';
+$('reset').onclick = () => { if (S.busy) return; S = fresh(); idle(); render(); };
+$('place').onclick = () => placeOrder(HOMES[+homeSel.value], $('addr').value.trim());
+
+function setStep(k) {
+  [1, 2, 3].forEach(i => { $('s' + i).classList.toggle('on', i === k); $('h' + i).classList.toggle('on', i === k); });
+  $('custPhone').classList.toggle('on', k === 1); $('riderPhone').classList.toggle('on', k === 2); $('graphBox').classList.toggle('on', k === 3);
+}
+function lock(on) { ['place', 'auto', 'variant', 'reset'].forEach(id => $(id).disabled = on); homeSel.disabled = on; $('addr').disabled = on; }
+
+// ── flow ──
+function idle() {
+  setStep(0); lock(false);
+  $('custBody').innerHTML = '<div class="empty">Waiting for an order.<br>Pick a customer above and press <b>Place order</b>.</div>';
+  $('riderBody').innerHTML = '<div class="empty">No parcel assigned yet.</div>';
+  setVariant();
+}
+function placeOrder(home, text) {
+  if (!text) return;
+  S.orders++;
+  const m = match(home, text);
+  const node = m.node || newNode(text);
+  attach(node, text, home);
+  const st0 = node.status;
+  S.cur = { no: 'VLM00128' + String(40 + S.orders).padStart(2, '0'), home, text, node, via: m.via, st0 };
+  log(`Order #${S.cur.no}: “${text}” → ${m.node ? 'linked to pin ' + node.id : 'new pin ' + node.id}. ${m.via}.`);
+  lock(true); setStep(1); customerAsk(); render();
+}
+function customerAsk() {
+  const c = S.cur, known = c.node.status === 'verified';
+  $('custBody').innerHTML = `
+    <div class="bubble">
+      <div>Namaste! Your Meesho order arrives tomorrow (cash on delivery).</div>
+      <div class="hi">Delivering to: <b style="color:var(--ink)">${esc(c.text)}</b></div>
+      ${known ? `<div>We already know where your door is <span class="mono" style="font-weight:600">${c.node.code}</span>. Just confirm.</div>`
+              : `<div>Help the rider find your door: share your location once.</div>`}
+      ${known ? '' : '<button class="btn main" id="cShare" type="button">Share my location</button>'}
+      <button class="btn ${known ? 'main' : ''}" id="cConfirm" type="button">${known ? 'Confirm order' : 'Confirm without location'}</button>
+    </div>`;
+  if (!known) $('cShare').onclick = () => customerReply(true);
+  $('cConfirm').onclick = () => customerReply(false);
+  riderWaiting();
+}
+function customerReply(share) {
+  const c = S.cur;
+  let reply = '';
+  if (share) {
+    const d = c.home.door, p = ll(d.x + gauss() * 8, d.y + gauss() * 8);
+    addObs(c.node, { ...p, src: 'customer' });
+    reply = `<div class="bubble me"><b>Location shared</b><span class="hi">${esc(c.text)}</span></div>
+             <div class="bubble"><div>Thank you! Order confirmed. Your location: <span class="mono" style="font-weight:600">${D.encode(p.lat, p.lon)}</span></div></div>`;
+    log(`Customer shared a location → added to pin ${c.node.id} (${BADGE[c.node.status][1].toLowerCase()}).`);
+  } else {
+    reply = `<div class="bubble me"><b>Confirmed</b></div><div class="bubble"><div>Thank you! Your order is confirmed.</div></div>`;
+  }
+  $('custBody').querySelectorAll('button').forEach(b => b.disabled = true);
+  $('custBody').insertAdjacentHTML('beforeend', reply);
+  c.dispatchStatus = c.node.status;
+  if (c.dispatchStatus === 'verified') S.dispatchedVerified++;
+  setStep(2); riderOrder(); render();
+}
+function riderWaiting() { $('riderBody').innerHTML = '<div class="empty">Waiting for the customer to confirm…</div>'; }
+function riderOrder() {
+  const c = S.cur, n = c.node, st = c.dispatchStatus;
+  $('riderBody').innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span class="mono hi">#${c.no}</span>${badge(st)}</div>
+      <div style="font-weight:500">${esc(c.text)}</div>
+      ${n.code ? `<div><div class="hi">DIGIPIN</div><div class="mono code">${n.code}</div></div>` : '<div class="hi">No location yet. Find it from the address text.</div>'}
+      <div class="hi">${st === 'verified' ? `${n.cons.inliers} sources agree within ${Math.max(1, Math.round(n.cons.spread))} m` : st === 'customer' ? 'Location shared by the customer, not yet confirmed by a delivery' : st === 'unconfirmed' ? 'One delivery so far; not yet confirmed' : 'First delivery to this home'}</div>
+    </div>
+    <div class="card"><div class="hi">Cash to collect</div><div class="big">₹${[299, 349, 389, 449, 629][S.orders % 5]}</div></div>
+    <button class="primary" id="rTap" type="button">Arrive and mark delivered</button>
+    <div class="hi" style="text-align:center">Phone GPS ±${$('sigma').value} m${$('corner').checked ? ' · <b style="color:var(--red)">rider will tap from the lane corner</b>' : ''}</div>`;
+  $('rTap').onclick = () => riderTap($('corner').checked);
+}
+function tapPoint(fromCorner) {
+  const c = S.cur, d = c.home.door;
+  if (fromCorner) {
+    const k = CORNERS.reduce((a, b) => Math.abs(b.x - d.x) < Math.abs(a.x - d.x) ? b : a);
+    return ll(k.x + gauss() * 3, k.y + gauss() * 3);
+  }
+  const s = +$('sigma').value * (c.home.apt ? 1.3 : 1);
+  return ll(d.x + gauss() * s, d.y + gauss() * s);
+}
+function riderTap(fromCorner) {
+  const c = S.cur, n = c.node, p = tapPoint(fromCorner);
+  $('corner').checked = false;
+  const before = n.status, prior = n.cons;
+  const dd = prior ? dist(p, prior) : null;
+  if (before === 'verified' && dd > 40) return riderWarn(p, dd);
+  addObs(n, { ...p, src: 'rider' });
+  const after = n.status;
+  let icon, title, sub, tone;
+  if (!prior) { tone = 'b-none'; title = 'First delivery to this home'; sub = 'Your tap created this home’s pin. ₹2 bonus when the next delivery lands within 15 m.'; }
+  else if (dd <= 15) { tone = 'b-verified'; title = `You’re ${Math.round(dd)} m from the pin`; sub = after === 'verified' && before !== 'verified' ? 'This delivery agrees with the earlier one. The pin is now verified.' : 'Inside the 15 m zone. Your tap keeps the pin accurate.'; }
+  else if (dd <= 40) { tone = 'b-unconfirmed'; title = `${Math.round(dd)} m from the pin`; sub = 'Accepted. The pin adjusts towards where deliveries actually happen.'; }
+  else { tone = 'b-unconfirmed'; title = `${Math.round(dd)} m from the earlier location`; sub = 'The two locations disagree, so the pin stays unconfirmed until another delivery settles it.'; }
+  log(`Rider tapped delivered at ${D.encode(p.lat, p.lon)}${fromCorner ? ' (from the lane corner)' : ''} → pin ${n.id} status: ${BADGE[after][1].toLowerCase()}.`);
+  riderResult(tone, title, sub, p);
+}
+function riderWarn(p, dd) {
+  const n = S.cur.node;
+  $('riderBody').innerHTML = `
+    <div class="card result"><div class="ring" style="background:var(--red-soft);color:var(--red)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="10"></circle></svg></div>
+      <div class="big">You’re ${Math.round(dd)} m from the pin</div>
+      <div class="hi">This home has a verified pin at <span class="mono">${n.code}</span>. Walk to the door before marking delivered, or call the customer.</div></div>
+    <button class="primary" id="rRetry" type="button">Walk to the door and tap again</button>
+    <button class="secondary" id="rForce" type="button">Mark anyway (flag for review)</button>`;
+  log(`Geofence: rider tried to mark delivered ${Math.round(dd)} m from verified pin ${n.id}. Blocked.`);
+  render();
+  $('rRetry').onclick = () => riderTap(false);
+  $('rForce').onclick = () => {
+    addObs(n, { ...p, src: 'rider', flagged: true }); S.flagged++;
+    log(`Tap flagged for review. It is ignored, so pin ${n.id} doesn’t move.`);
+    riderResult('b-flag', 'Flagged for review', 'The tap is saved but ignored by the address graph. Repeated flags show up in the rider’s quality score.', p);
+  };
+}
+function riderResult(tone, title, sub, p) {
+  const n = S.cur.node;
+  $('riderBody').innerHTML = `
+    <div class="card result"><span class="badge ${tone}">${tone === 'b-flag' ? 'Not counted' : 'Delivered'}</span>
+      <div class="big">${title}</div><div class="hi">${sub}</div>
+      <div class="hi">Your tap <span class="mono">${D.encode(p.lat, p.lon)}</span></div></div>
+    <div class="card"><div class="hi">Pin for this home now</div>${badge(n.status)}${n.code ? `<div class="mono code">${n.code}</div>` : ''}</div>
+    <button class="primary" id="rNext" type="button">Next order</button>`;
+  setStep(3); S.sel = n.id; render();
+  $('rNext').onclick = () => idle();
+}
+function addObs(n, o) { o.t = Date.now(); n.obs.push(o); S.lastObs = o; refresh(n); }
+
+// ── autoplay ──
+$('auto').onclick = async () => {
+  if (S.busy) return; S.busy = true; lock(true);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const weights = [4, 2, 2, 2, 3, 2, 2];
+  for (let k = 0; k < 10; k++) {
+    let r = rnd() * weights.reduce((a, b) => a + b), i = 0; while ((r -= weights[i]) > 0) i++;
+    const h = HOMES[i], text = h.v[Math.floor(rnd() * h.v.length)];
+    homeSel.value = i; $('addr').value = text; showTokens();
+    placeOrder(h, text); await sleep(450);
+    const askShare = S.cur.node.status !== 'verified' && rnd() < 0.3;
+    customerReply(askShare); await sleep(450);
+    const corner = rnd() < 0.08;
+    const n = S.cur.node;
+    if (n.status === 'verified' && corner) { riderTap(true); await sleep(500); if ($('rRetry')) riderTap(false); }
+    else riderTap(corner);
+    await sleep(550);
+  }
+  S.busy = false; idle(); render();
+};
+
+// ── render graph ──
+function render() {
+  const nodes = S.nodes.filter(n => n.obs.length);
+  const ver = S.nodes.filter(n => n.status === 'verified').length;
+  $('metrics').innerHTML = [
+    [S.orders, 'orders placed'], [nodes.length, 'pins in the graph'], [ver, 'verified pins'],
+    [S.orders ? Math.round(S.dispatchedVerified / S.orders * 100) + '%' : '—', 'orders sent out with a verified pin'], [S.flagged, 'taps flagged']
+  ].map(([v, l]) => `<div class="metric"><b>${v}</b><span>${l}</span></div>`).join('');
+  drawMap();
+  const n = S.nodes.find(x => x.id === S.sel);
+  if (n) {
+    const r = n.obs.filter(o => o.src === 'rider' && !o.flagged).length, cu = n.obs.filter(o => o.src === 'customer').length, f = n.obs.filter(o => o.flagged).length;
+    $('info').innerHTML = `<h3>Pin ${n.id} ${badge(n.status)}</h3>
+      ${n.code ? `<div class="mono code">${n.code}</div>` : '<div class="hi">No location yet</div>'}
+      <div class="hi">${r} rider tap${r === 1 ? '' : 's'} · ${cu} customer share${cu === 1 ? '' : 's'}${f ? ` · ${f} flagged` : ''}${n.cons ? ` · spread ${Math.round(n.cons.spread || 0)} m` : ''}</div>
+      <div style="margin-top:6px"><b>Addresses linked to this pin</b></div><ul>${n.texts.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  }
+  $('log').innerHTML = S.log.slice(-14).reverse().map((t, i) => `<li class="${i === 0 ? 'new' : ''}">${esc(t)}</li>`).join('') || '<li style="color:var(--muted);border:0;padding:0">Nothing yet.</li>';
+}
+function drawMap() {
+  const svg = $('map'); let s = '';
+  // DIGIPIN level-10 grid
+  const d = 36 / Math.pow(4, 10), a = ll(-115, -48), b = ll(130, 48);
+  let g = '';
+  for (let k = Math.ceil((a.lon - 63.5) / d); k <= Math.floor((b.lon - 63.5) / d); k++) { const X = xy({ lat: BASE.lat, lon: 63.5 + k * d }).x; g += `M${X.toFixed(2)} -48V48`; }
+  for (let k = Math.ceil((a.lat - 2.5) / d); k <= Math.floor((b.lat - 2.5) / d); k++) { const Y = xy({ lat: 2.5 + k * d, lon: BASE.lon }).y; g += `M-115 ${SY(Y).toFixed(2)}H130`; }
+  s += `<rect x="-115" y="-48" width="245" height="96" fill="var(--map)"></rect>`;
+  s += `<rect x="-115" y="-4" width="245" height="8" fill="var(--lane)"></rect>`;
+  for (const c of CORNERS) s += `<rect x="${c.x - 4}" y="-48" width="8" height="96" fill="var(--lane)"></rect>`;
+  s += `<path d="${g}" stroke="var(--grid)" stroke-width="0.25" fill="none"></path>`;
+  for (const r of EXTRA_RECTS) s += `<rect x="${r[0]}" y="${SY(r[1] + r[3])}" width="${r[2]}" height="${r[3]}" fill="var(--bldg)" rx="0.6"></rect>`;
+  for (const h of HOMES) if (h.rect) {
+    const r = h.rect; s += `<rect x="${r[0]}" y="${SY(r[1] + r[3])}" width="${r[2]}" height="${r[3]}" fill="var(--bldg)" stroke="var(--muted)" stroke-width="0.3" rx="0.6"></rect>`;
+    if (h.label) s += `<text x="${r[0] + r[2] / 2}" y="${SY(r[1] + r[3] / 2) + 1.2}" font-size="3.2" text-anchor="middle" fill="var(--ink)" font-family="Hind, sans-serif" font-weight="600">${esc(h.label)}</text>`;
+  }
+  for (const l of LANDMARKS) s += `<text x="${l.x}" y="${SY(l.y)}" font-size="3" text-anchor="middle" fill="var(--muted)" font-family="Hind, sans-serif">${esc(l.t)}</text>`;
+  s += `<text x="-110" y="2.6" font-size="3.4" fill="var(--muted)" font-family="Hind, sans-serif">Gali 3</text>`;
+  s += `<text x="-92" y="-42" font-size="2.8" text-anchor="middle" fill="var(--muted)" font-family="Hind, sans-serif">lane corner</text>`;
+  // links from selected pin to its observations
+  const sel = S.nodes.find(n => n.id === S.sel);
+  if (sel && sel.cons) { const c = xy(sel.cons); for (const o of sel.obs) { const p = xy(o); s += `<line x1="${c.x}" y1="${SY(c.y)}" x2="${p.x}" y2="${SY(p.y)}" stroke="${o.flagged ? 'var(--red)' : 'var(--ink)'}" stroke-opacity=".35" stroke-width="0.35"></line>`; } }
+  // observations
+  for (const n of S.nodes) for (const o of n.obs) {
+    const p = xy(o), X = p.x, Y = SY(p.y), cls = o === S.lastObs ? 'pop' : '';
+    if (o.flagged) s += `<path class="${cls}" d="M${X - 1.4} ${Y - 1.4}L${X + 1.4} ${Y + 1.4}M${X + 1.4} ${Y - 1.4}L${X - 1.4} ${Y + 1.4}" stroke="var(--red)" stroke-width="0.7"></path>`;
+    else if (o.src === 'customer') s += `<rect class="${cls}" x="${X - 1}" y="${Y - 1}" width="2" height="2" fill="var(--blue)"></rect>`;
+    else s += `<circle class="${cls}" cx="${X}" cy="${Y}" r="1.2" fill="var(--plum)"></circle>`;
+  }
+  // pins
+  for (const n of S.nodes) {
+    if (!n.cons) continue;
+    const p = xy(n.cons), X = p.x, Y = SY(p.y);
+    const col = n.status === 'verified' ? 'var(--teal)' : n.status === 'customer' ? 'var(--blue)' : 'var(--amber)';
+    const fill = n.status === 'verified' ? col : 'var(--panel)';
+    const isNew = S.lastObs && n.obs.includes(S.lastObs);
+    if (isNew) s += `<circle class="pulse" cx="${X}" cy="${Y}" r="4" fill="none" stroke="${col}"></circle>`;
+    s += `<g data-node="${n.id}" style="cursor:pointer"><circle cx="${X}" cy="${Y}" r="${S.sel === n.id ? 4.2 : 3.4}" fill="${fill}" stroke="${col}" stroke-width="${S.sel === n.id ? 1.2 : 0.9}"></circle>
+      <text x="${X}" y="${Y + 1.2}" font-size="3.4" text-anchor="middle" font-weight="700" fill="${n.status === 'verified' ? '#fff' : col}" font-family="Hind, sans-serif" pointer-events="none">${n.id}</text></g>`;
+  }
+  svg.innerHTML = s;
+  svg.querySelectorAll('[data-node]').forEach(el => el.addEventListener('click', () => { S.sel = +el.dataset.node; render(); }));
+}
+function log(t) { S.log.push(t); }
+
+idle(); render();
+})();
+</script>
+</body>
+</html>
