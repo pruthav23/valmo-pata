@@ -9,19 +9,19 @@
 :root{
   --bg:#F3EFF2; --panel:#FFFFFF; --ink:#231B21; --muted:#5E5560; --line:#E2DAE0;
   --plum:#5B1A47; --plum-soft:#EFE2EB; --teal:#0B5A4C; --teal-mid:#2E9C83; --teal-soft:#DDF1EC; --amber:#7A4700; --amber-soft:#FBEBD0;
-  --blue:#1B4F9C; --blue-soft:#DCE7F8; --red:#B3122C; --red-soft:#F8DCE1; --grey-soft:#ECE8EC;
+  --blue:#1B4F9C; --blue-soft:#DCE7F8; --orange:#8A2E0B; --orange-soft:#FDE3D3; --red:#B3122C; --red-soft:#F8DCE1; --grey-soft:#ECE8EC;
   --map:#E9E3E7; --lane:#FFFFFF; --bldg:#CFC6CC; --grid:rgba(35,27,33,.10); --phone:#231B21;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141013; --panel:#1E181C; --ink:#EDE6EB; --muted:#A99DA6; --line:#352C32;
   --plum:#C77DB0; --plum-soft:#3A2333; --teal:#5FD0B4; --teal-mid:#3FB497; --teal-soft:#123A31; --amber:#F0B45A; --amber-soft:#3B2B12;
-  --blue:#8DB4F2; --blue-soft:#1A2A45; --red:#FF7088; --red-soft:#43161F; --grey-soft:#2A2328;
+  --blue:#8DB4F2; --blue-soft:#1A2A45; --orange:#FF9C6E; --orange-soft:#3E2014; --red:#FF7088; --red-soft:#43161F; --grey-soft:#2A2328;
   --map:#221B20; --lane:#33292F; --bldg:#433840; --grid:rgba(237,230,235,.10); --phone:#000;}}
 :root[data-theme="dark"]{
   --bg:#141013; --panel:#1E181C; --ink:#EDE6EB; --muted:#A99DA6; --line:#352C32;
   --plum:#C77DB0; --plum-soft:#3A2333; --teal:#5FD0B4; --teal-mid:#3FB497; --teal-soft:#123A31; --amber:#F0B45A; --amber-soft:#3B2B12;
-  --blue:#8DB4F2; --blue-soft:#1A2A45; --red:#FF7088; --red-soft:#43161F; --grey-soft:#2A2328;
+  --blue:#8DB4F2; --blue-soft:#1A2A45; --orange:#FF9C6E; --orange-soft:#3E2014; --red:#FF7088; --red-soft:#43161F; --grey-soft:#2A2328;
   --map:#221B20; --lane:#33292F; --bldg:#433840; --grid:rgba(237,230,235,.10); --phone:#000;}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:border-box}
@@ -97,6 +97,22 @@ details.more summary{cursor:pointer;font-size:13px;color:var(--muted)}
 .ring{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 .effort{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 .effort span{background:var(--bg);border-radius:8px;padding:4px 9px;font-size:13px;font-weight:600}
+.lang{margin-left:auto;display:flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.lang button{border:0;background:transparent;padding:6px 10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);min-width:38px}
+.lang button[aria-pressed="true"]{background:var(--plum);color:#fff}
+.rtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.rtop b{font-size:16px}.cash{font-weight:700;font-size:15px}
+.rmap svg{width:100%;height:auto;display:block;border-radius:8px}
+.nomap{height:110px;border-radius:8px;background:var(--grey-soft);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:10px}
+.rchip{display:flex;gap:10px;align-items:center;border-radius:10px;padding:9px 11px}
+.rchip b{display:block;font-size:15.5px;line-height:1.2}.rchip div span{display:block;font-size:12.5px;line-height:1.35}
+.rchip.mini{display:inline-flex;padding:2px 8px;gap:6px;border-radius:99px;vertical-align:middle}.rchip.mini b{font-size:12px}
+.r-exact{background:var(--teal-soft);color:var(--teal)}.r-near{background:var(--amber-soft);color:var(--amber)}
+.r-area{background:var(--orange-soft);color:var(--orange)}.r-none{background:var(--grey-soft);color:var(--muted)}
+.bars{display:inline-flex;align-items:flex-end;gap:2px;height:16px;flex:none}.bars i{display:block;width:4px;border-radius:1px;background:currentColor;opacity:.22}.bars i.on{opacity:1}
+.rchip .bars{display:inline-flex}.rchip.mini .bars{height:13px}.rchip.mini .bars i{width:3px}
+.note-r{background:var(--panel);border-radius:12px;padding:10px 12px;font-size:14px}
+.bonus{margin-top:8px;background:var(--amber-soft);color:var(--amber);border-radius:8px;padding:6px 9px;font-weight:600;font-size:13px}
+.effbox{background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
 .next{background:var(--teal-soft);color:var(--teal);border-radius:12px;padding:10px 12px;font-size:13.5px}
 .next b{display:block;font-size:14.5px}
 .graph{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;transition:box-shadow .25s}
@@ -188,21 +204,24 @@ footer{margin-top:20px;color:var(--muted);font-size:12.5px}
     <div>
       <p class="colhead" id="h1">Step 1 · Customer</p>
       <div class="phone" id="custPhone">
-        <div class="ph-head"><div class="avatar">V</div><div><b>Valmo by Meesho</b><span>Order updates · illustrative chat</span></div></div>
+        <div class="ph-head"><div class="avatar">V</div><div><b>Valmo by Meesho</b><span id="custSub">Order updates · illustrative chat</span></div>
+          <div class="lang" role="group" aria-label="Customer language" data-lang-for="c"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="hi" aria-pressed="false">हिं</button></div></div>
         <div class="ph-body" id="custBody" aria-live="polite"></div>
       </div>
     </div>
     <div>
       <p class="colhead" id="h2">Step 2 · Rider</p>
       <div class="phone" id="riderPhone">
-        <div class="ph-head"><div class="avatar" style="background:var(--ink)">R</div><div><b>Valmo Rider</b><span>Kalyanpur hub · Gali 3 beat</span></div></div>
+        <div class="ph-head"><div class="avatar" style="background:var(--ink)">R</div><div><b>Valmo Rider</b><span id="riderSub">Kalyanpur hub · Gali 3</span></div>
+          <div class="lang" role="group" aria-label="Rider language" data-lang-for="r"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="hi" aria-pressed="false">हिं</button></div></div>
         <div class="ph-body" id="riderBody" aria-live="polite"></div>
       </div>
     </div>
     <div class="graphcol">
-      <p class="colhead" id="h3">Step 3 · Address graph</p>
+      <p class="colhead" id="h3">Step 3 · Behind the scenes: the address graph <span style="text-transform:none;font-weight:500;letter-spacing:0">(riders and customers never see this)</span></p>
       <div class="graph" id="graphBox">
         <div class="metrics" id="metrics"></div>
+        <div id="effortBox"></div>
         <div class="mapwrap"><svg id="map" viewBox="-115 -48 245 96" role="img" aria-label="Map of Gali 3 with delivery taps and pins"></svg></div>
         <div class="legend">
           <span><i style="background:var(--teal);border-radius:50%"></i>Verified pin</span>
@@ -846,19 +865,65 @@ function showHomeNote() {
   $('homeNote').innerHTML = (s != null ? `Has ordered before · ${badge(S.nodes[s].status)}` : 'First order from this customer') + ` · <span>${h.q.toLowerCase()} address</span>`;
 }
 $('sigma').oninput = () => $('sigmaOut').textContent = '±' + $('sigma').value + ' m';
-$('reset').onclick = () => { if (S.busy) return; S = fresh(); idle(); render1(); };
+$('reset').onclick = () => { if (S.busy) return; S = fresh(); vIdx = 0; idle(); render1(); };
 $('place').onclick = () => placeOrder(HOMES[+homeSel.value], $('addr').value.trim());
 
 function setStep(k) {
   [1, 2, 3].forEach(i => $('h' + i).classList.toggle('on', i === k));
   $('custPhone').classList.toggle('on', k === 1); $('riderPhone').classList.toggle('on', k === 2); $('graphBox').classList.toggle('on', k === 3);
 }
-function lock(on) { ['place', 'auto', 'variant', 'reset'].forEach(id => $(id).disabled = on); homeSel.disabled = on; $('addr').disabled = on; }
+function lock(on, why) {
+  ['place', 'auto', 'variant'].forEach(id => $(id).disabled = on); homeSel.disabled = on; $('addr').disabled = on;
+  $('reset').disabled = S.busy;
+  $('place').textContent = on ? (S.busy ? 'Running 10 orders…' : (why || 'Finish this order first')) : 'Place order';
+}
+
+// ── phone languages: customer and rider choose separately ──
+const LANG = { c: 'en', r: 'en' };
+const TC = {
+  en: { sub: 'Order updates · illustrative chat', idle: 'Waiting for an order.', greet: 'Namaste! Your Meesho order arrives tomorrow (cash on delivery).', to: 'Delivering to:',
+        known: 'We already know where your door is. Just confirm.', ask: 'Help the rider find your door: share your location once.',
+        share: 'Share my location', privacy: 'Saved only to deliver your orders. Remove anytime.', confirm: 'Confirm order', confirmNo: 'Confirm without location',
+        shared: '📍 Location shared', confirmed: 'Confirmed', thanks: 'Thank you! Your order is confirmed.' },
+  hi: { sub: 'ऑर्डर अपडेट · उदाहरण चैट', idle: 'ऑर्डर का इंतज़ार…', greet: 'नमस्ते! आपका Meesho ऑर्डर कल पहुँचेगा (कैश ऑन डिलीवरी)।', to: 'डिलीवरी का पता:',
+        known: 'हमें आपके घर की सही लोकेशन पता है। बस ऑर्डर कन्फ़र्म करें।', ask: 'राइडर आपके घर तक आसानी से पहुँचे, इसके लिए एक बार अपनी लोकेशन भेजें।',
+        share: 'लोकेशन भेजें', privacy: 'सिर्फ़ आपके ऑर्डर डिलीवर करने के लिए सेव होगी। कभी भी हटा सकते हैं।', confirm: 'ऑर्डर कन्फ़र्म करें', confirmNo: 'बिना लोकेशन के कन्फ़र्म करें',
+        shared: '📍 लोकेशन भेज दी', confirmed: 'कन्फ़र्म', thanks: 'धन्यवाद! आपका ऑर्डर कन्फ़र्म हो गया है।' }
+};
+const TR = {
+  en: { sub: 'Kalyanpur hub · Gali 3', idle: 'No parcel assigned yet.', waiting: 'Waiting for the customer to confirm…', cash: 'cash', address: 'Address',
+        exact: 'Exact door', exactTip: 'Go straight to the pin.', near: 'Near this spot', nearTip: 'The home is inside the circle. Check the house number.',
+        area: 'Search area', areaTip: 'Look around this area. Call the customer if needed.', none: 'Address only', noneTip: 'No map location yet. Follow the address and call the customer if needed.',
+        noMap: 'No map location for this address yet', nav: 'Navigate', call: 'Call customer', delivered: 'Delivered',
+        far: d => `You seem far from the customer's door (about ${d} m)`, farTip: 'Go closer, or call the customer.', closer: "I'll go closer", here: 'Customer asked me to deliver here',
+        done: 'Delivered', collected: 'cash collected', review: 'Sent for review', reviewTip: "The delivery is recorded, but this location won't change the map.",
+        msg_first: "New address. Your delivery saved this home's location for the next rider.", bonus: 'Earn ₹2 when the next delivery here confirms it.',
+        msg_confirmed: 'Location confirmed. Next time this home shows as “Exact door”.', msg_matched: 'Thanks! The location matched.', msg_adjust: "Thanks! We'll double-check this location." },
+  hi: { sub: 'कल्याणपुर हब · गली 3', idle: 'अभी कोई पार्सल नहीं।', waiting: 'ग्राहक के कन्फ़र्म करने का इंतज़ार…', cash: 'कैश', address: 'पता',
+        exact: 'सही दरवाज़ा', exactTip: 'सीधे पिन पर जाएँ।', near: 'इस जगह के पास', nearTip: 'घर इस घेरे के अंदर है। मकान नंबर देख लें।',
+        area: 'इस इलाके में', areaTip: 'इस इलाके में ढूँढें। ज़रूरत हो तो ग्राहक को कॉल करें।', none: 'सिर्फ़ पता', noneTip: 'अभी मैप पर लोकेशन नहीं है। पते से ढूँढें, ज़रूरत हो तो कॉल करें।',
+        noMap: 'इस पते की मैप लोकेशन अभी नहीं है', nav: 'रास्ता देखें', call: 'ग्राहक को कॉल करें', delivered: 'डिलीवर हो गया',
+        far: d => `आप ग्राहक के दरवाज़े से दूर लग रहे हैं (लगभग ${d} मीटर)`, farTip: 'पास जाएँ, या ग्राहक को कॉल करें।', closer: 'मैं पास जाता हूँ', here: 'ग्राहक ने यहीं डिलीवरी करने को कहा',
+        done: 'डिलीवर हो गया', collected: 'कैश लिया', review: 'जाँच के लिए भेजा गया', reviewTip: 'डिलीवरी दर्ज हो गई, पर इसकी लोकेशन मैप नहीं बदलेगी।',
+        msg_first: 'नया पता। आपकी डिलीवरी से इस घर की लोकेशन अगले राइडर के लिए सेव हो गई।', bonus: 'अगली डिलीवरी में लोकेशन सही निकली तो ₹2 बोनस मिलेगा।',
+        msg_confirmed: 'लोकेशन पक्की हो गई। अगली बार यह घर “सही दरवाज़ा” दिखेगा।', msg_matched: 'धन्यवाद! लोकेशन सही मिली।', msg_adjust: 'धन्यवाद! हम इस लोकेशन को दोबारा जाँचेंगे।' }
+};
+// what the rider sees: one of four simple levels, never codes or counts
+const TIER = { verified: 'exact', unconfirmed: 'near', customer: 'near', none: 'none' };
+const TIERS = { exact: { cls: 'r-exact', bars: 4, r: 8 }, near: { cls: 'r-near', bars: 3, r: 22 }, area: { cls: 'r-area', bars: 2, r: 50 }, none: { cls: 'r-none', bars: 1, r: 0 } };
+const bars = k => `<span class="bars" aria-hidden="true">${[1, 2, 3, 4].map(i => `<i style="height:${3 + i * 3}px" class="${i <= k ? 'on' : ''}"></i>`).join('')}</span>`;
+let CV = { stage: 'idle' }, RV = { stage: 'idle' };
+
+function setLang(who, l) {
+  LANG[who] = l;
+  document.querySelectorAll(`[data-lang-for="${who}"] button`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === l)));
+  if (who === 'c') { $('custSub').textContent = TC[l].sub; renderCust(); } else { $('riderSub').textContent = TR[l].sub; renderRider(); }
+}
+document.querySelectorAll('[data-lang-for] button').forEach(b => b.onclick = () => setLang(b.parentElement.dataset.langFor, b.dataset.l));
 
 function idle() {
   setStep(0); lock(false);
-  $('custBody').innerHTML = '<div class="empty">Waiting for an order.<br>Pick a customer above and press <b>Place order</b>.</div>';
-  $('riderBody').innerHTML = '<div class="empty">No parcel assigned yet.</div>';
+  CV = { stage: 'idle' }; RV = { stage: 'idle' }; renderCust(); renderRider();
   setVariant();
 }
 function placeOrder(home, text) {
@@ -866,53 +931,89 @@ function placeOrder(home, text) {
   S.orders++;
   const m = match(home, text), node = m.node || newNode();
   attach(node, text, home);
-  S.cur = { no: 'VLM00128' + String(40 + S.orders).padStart(2, '0'), home, text, node };
+  S.cur = { no: 'VLM00128' + String(40 + S.orders).padStart(2, '0'), home, text, node, cash: [299, 349, 389, 449, 629][S.orders % 5] };
   log(`Order #${S.cur.no}: “${text}” → ${m.node ? 'linked to pin ' + node.id : 'new pin ' + node.id}. ${m.via}.`);
-  lock(true); setStep(1); customerAsk(); render1();
+  lock(true, 'Step 1: answer on the customer phone ↓'); setStep(1); customerAsk(); render1();
 }
 function customerAsk() {
-  const c = S.cur, known = c.node.status === 'verified';
-  $('custBody').innerHTML = `
-    <div class="bubble">
-      <div>Namaste! Your Meesho order arrives tomorrow (cash on delivery).</div>
-      <div class="hi">Delivering to: <b style="color:var(--ink)">${esc(c.text)}</b></div>
-      ${known ? `<div>We already know where your door is. Just confirm.</div>` : `<div>Help the rider find your door: share your location once.</div>`}
-      ${known ? '' : '<button class="btn main" id="cShare" type="button">Share my location</button>'}
-      <button class="btn ${known ? 'main' : ''}" id="cConfirm" type="button">${known ? 'Confirm order' : 'Confirm without location'}</button>
-    </div>`;
-  if (!known) $('cShare').onclick = () => customerReply(true);
-  $('cConfirm').onclick = () => customerReply(false);
-  $('riderBody').innerHTML = '<div class="empty">Waiting for the customer to confirm…</div>';
+  const c = S.cur;
+  CV = { stage: 'ask', text: c.text, known: c.node.status === 'verified' };
+  RV = { stage: 'waiting' };
+  renderCust(); renderRider();
+}
+function renderCust() {
+  const t = TC[LANG.c]; let h;
+  if (CV.stage === 'idle') h = `<div class="empty">${t.idle}<br><span class="hi">Demo: pick a customer above and press <b>Place order</b>.</span></div>`;
+  else {
+    const done = CV.stage === 'replied', dis = done ? 'disabled' : '';
+    h = `<div class="bubble"><div>${t.greet}</div><div class="hi">${t.to} <b style="color:var(--ink)">${esc(CV.text)}</b></div>
+      <div>${CV.known ? t.known : t.ask}</div>
+      ${CV.known ? '' : `<button class="btn main" id="cShare" type="button" ${dis}>${t.share}</button><div class="hi" style="font-size:12px">${t.privacy}</div>`}
+      <button class="btn ${CV.known ? 'main' : ''}" id="cConfirm" type="button" ${dis}>${CV.known ? t.confirm : t.confirmNo}</button></div>`;
+    if (done) h += `<div class="bubble me"><b>${CV.share ? t.shared : t.confirmed}</b></div><div class="bubble">${t.thanks}</div>`;
+  }
+  $('custBody').innerHTML = h;
+  if (CV.stage === 'ask') { if (!CV.known) $('cShare').onclick = () => customerReply(true); $('cConfirm').onclick = () => customerReply(false); }
 }
 function customerReply(share) {
   const c = S.cur;
-  let reply;
   if (share) {
     const d = c.home.door, p = ll(d.x + gauss() * 8, d.y + gauss() * 8);
     addObs(c.node, { ...p, src: 'customer' });
-    reply = `<div class="bubble me"><b>📍 Location shared</b></div><div class="bubble">Thank you! Order confirmed.</div>`;
     log(`Customer shared a location → pin ${c.node.id} now: ${BADGE[c.node.status][1].toLowerCase()}.`);
-  } else reply = `<div class="bubble me"><b>Confirmed</b></div><div class="bubble">Thank you! Your order is confirmed.</div>`;
-  $('custBody').querySelectorAll('button').forEach(b => b.disabled = true);
-  $('custBody').insertAdjacentHTML('beforeend', reply);
+  }
+  CV.stage = 'replied'; CV.share = share; renderCust();
   c.st = c.node.status;
   c.eff = effort(c.st, c.home.q);
-  setStep(2); riderOrder(); render1();
+  RV = { stage: 'order' };
+  lock(true, 'Step 2: deliver on the rider phone ↓'); setStep(2); renderRider(); render1();
 }
-function riderOrder() {
-  const c = S.cur, n = c.node, st = c.st;
-  const how = st === 'verified' ? 'Navigate straight to the pin' : st === 'none' ? 'No location: search using the address text' : 'Navigate to the pin, then check';
-  $('riderBody').innerHTML = `
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center"><span class="mono hi">#${c.no}</span>${badge(st)}</div>
-      <div style="font-weight:500">${esc(c.text)}</div>
-      ${n.code ? `<div><div class="hi">DIGIPIN</div><div class="mono code">${n.code}</div></div>` : ''}
-      <div class="hi">${how}</div>
-    </div>
-    <button class="primary" id="rTap" type="button">Go to the door and mark delivered</button>
-    <div class="hi" style="text-align:center">${$('corner').checked ? '<b style="color:var(--red)">This rider will tap from the lane corner</b>' : '&nbsp;'}</div>`;
-  $('rTap').onclick = () => riderTap($('corner').checked);
+function sceneSVG() {
+  const SY = y => -y; let s = `<rect x="-115" y="-48" width="245" height="96" fill="var(--map)"></rect><rect x="-115" y="-4" width="245" height="8" fill="var(--lane)"></rect>`;
+  for (const c of CORNERS) s += `<rect x="${c.x - 4}" y="-48" width="8" height="96" fill="var(--lane)"></rect>`;
+  for (const r of EXTRA_RECTS) s += `<rect x="${r[0]}" y="${SY(r[1] + r[3])}" width="${r[2]}" height="${r[3]}" fill="var(--bldg)" rx="0.6"></rect>`;
+  for (const h of HOMES) if (h.rect) { const r = h.rect; s += `<rect x="${r[0]}" y="${SY(r[1] + r[3])}" width="${r[2]}" height="${r[3]}" fill="var(--bldg)" rx="0.6"></rect>`; }
+  for (const l of LANDMARKS) s += `<text x="${l.x}" y="${SY(l.y)}" font-size="2.6" text-anchor="middle" fill="var(--muted)" font-family="Hind, sans-serif">${esc(l.t)}</text>`;
+  return s;
 }
+function riderMap(c, tier) {
+  if (tier === 'none' || !c.node.cons) return `<div class="nomap">${TR[LANG.r].noMap}</div>`;
+  const p = xy(c.node.cons), X = p.x, Y = -p.y, r = TIERS[tier].r, col = tier === 'exact' ? 'var(--teal)' : 'var(--amber)';
+  return `<div class="rmap"><svg viewBox="${(X - 34).toFixed(1)} ${(Y - 22).toFixed(1)} 68 44" role="img" aria-label="Map with the delivery location">${sceneSVG()}
+    <circle cx="${X}" cy="${Y}" r="${r}" fill="${col}" fill-opacity=".14" stroke="${col}" stroke-width=".5" stroke-dasharray="1.6 1.2"></circle>
+    <path d="M${X} ${Y} c-2.6 -3.2 -2.6 -6.4 0 -6.4 c2.6 0 2.6 3.2 0 6.4z" fill="var(--plum)"></path><circle cx="${X}" cy="${Y - 4.1}" r="1" fill="#fff"></circle></svg></div>`;
+}
+function renderRider() {
+  const t = TR[LANG.r], c = S.cur; let h;
+  if (RV.stage === 'idle') h = `<div class="empty">${t.idle}</div>`;
+  else if (RV.stage === 'waiting') h = `<div class="empty">${t.waiting}</div>`;
+  else if (RV.stage === 'order') {
+    const tier = TIER[c.st], tt = TIERS[tier];
+    h = `<div class="card">
+        <div class="rtop"><b>${esc(c.home.name.split('·')[0].trim())}</b><span class="cash">₹${c.cash} ${t.cash}</span></div>
+        ${riderMap(c, tier)}
+        <div class="rchip ${tt.cls}">${bars(tt.bars)}<div><b>${t[tier]}</b><span>${t[tier + 'Tip']}</span></div></div>
+        <div><div class="hi">${t.address}</div><div style="font-weight:500">${esc(c.text)}</div></div>
+      </div>
+      <div class="row2"><button class="secondary" type="button">${t.nav}</button><button class="secondary" type="button">${t.call}</button></div>
+      <button class="primary" id="rTap" type="button">${t.delivered}</button>
+      ${$('corner').checked ? '<div class="hi" style="text-align:center"><b style="color:var(--red)">Demo: this rider will tap from the lane corner</b></div>' : ''}`;
+  } else if (RV.stage === 'warn') {
+    h = `<div class="card result"><div class="ring" style="background:var(--red-soft);color:var(--red)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="10"></circle></svg></div>
+        <div class="big">${t.far(Math.round(RV.dd))}</div><div class="hi">${t.farTip}</div></div>
+      <button class="primary" id="rRetry" type="button">${t.closer}</button>
+      <button class="secondary" id="rForce" type="button">${t.here}</button>`;
+  } else {
+    const flagged = RV.kind === 'flagged';
+    h = `<div class="card result"><div class="ring" style="background:${flagged ? 'var(--amber-soft)' : 'var(--teal-soft)'};color:${flagged ? 'var(--amber)' : 'var(--teal)'}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div>
+        <div class="big">${flagged ? t.review : t.done}</div><div class="hi">${flagged ? t.reviewTip : `₹${c.cash} ${t.collected}`}</div></div>
+      ${flagged ? '' : `<div class="note-r">${t['msg_' + RV.kind]}${RV.kind === 'first' ? `<div class="bonus">${t.bonus}</div>` : ''}</div>`}`;
+  }
+  $('riderBody').innerHTML = h;
+  if (RV.stage === 'order') $('rTap').onclick = () => riderTap($('corner').checked);
+  if (RV.stage === 'warn') { $('rRetry').onclick = () => riderTap(false); $('rForce').onclick = forceHere; }
+}
+$('corner').addEventListener('change', () => { if (RV.stage === 'order') renderRider(); });
 function tapPoint(fromCorner) {
   const c = S.cur, d = c.home.door;
   if (fromCorner) { const k = CORNERS.reduce((a, b) => Math.abs(b.x - d.x) < Math.abs(a.x - d.x) ? b : a); return ll(k.x + gauss() * 3, k.y + gauss() * 3); }
@@ -923,58 +1024,39 @@ function riderTap(fromCorner) {
   const c = S.cur, n = c.node, p = tapPoint(fromCorner);
   $('corner').checked = false;
   const before = n.status, prior = n.cons, dd = prior ? dist(p, prior) : null;
-  if (before === 'verified' && dd > 40) return riderWarn(p, dd);
+  if (before === 'verified' && dd > 40) {
+    RV = { stage: 'warn', dd, p };
+    log(`Blocked: rider tried to mark delivered ${Math.round(dd)} m from verified pin ${n.id}.`);
+    lock(true, 'Step 2: choose an option on the rider phone ↓'); renderRider(); render1(); return;
+  }
   addObs(n, { ...p, src: 'rider' });
   const after = n.status;
-  let title, sub;
-  if (!prior) { title = 'First delivery to this home'; sub = 'Your tap created this home’s pin.'; }
-  else if (dd <= 15) { title = `${Math.round(dd)} m from the pin`; sub = after === 'verified' && before !== 'verified' ? 'This agrees with the earlier location. The pin is now verified.' : 'Inside the 15 m zone. The pin stays accurate.'; }
-  else if (dd <= 40) { title = `${Math.round(dd)} m from the pin`; sub = 'Accepted. The pin adjusts towards real deliveries.'; }
-  else { title = `${Math.round(dd)} m from the earlier location`; sub = 'These disagree, so the pin stays unconfirmed for now.'; }
-  S.mins += c.eff.mins;
-  if (!S.firstEffort[c.home.id]) S.firstEffort[c.home.id] = c.eff;
+  const kind = !prior ? 'first' : (after === 'verified' && before !== 'verified') ? 'confirmed' : (dd <= 15 ? 'matched' : 'adjust');
   log(`Delivered: ${c.eff.mins} min to find the door, ${c.eff.calls} call${c.eff.calls === 1 ? '' : 's'}. Pin ${n.id} now: ${BADGE[after][1].toLowerCase()}.`);
-  riderResult(title, sub, p, false);
+  finish(kind);
 }
-function riderWarn(p, dd) {
+function forceHere() {
   const n = S.cur.node;
-  $('riderBody').innerHTML = `
-    <div class="card result"><div class="ring" style="background:var(--red-soft);color:var(--red)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="10"></circle></svg></div>
-      <div class="big">You’re ${Math.round(dd)} m from the pin</div>
-      <div class="hi">This home has a verified pin. Walk to the door before marking delivered.</div></div>
-    <button class="primary" id="rRetry" type="button">Walk to the door and tap again</button>
-    <button class="secondary" id="rForce" type="button">Mark anyway (flag for review)</button>`;
-  log(`Blocked: rider tried to mark delivered ${Math.round(dd)} m from verified pin ${n.id}.`);
-  render1();
-  $('rRetry').onclick = () => riderTap(false);
-  $('rForce').onclick = () => {
-    addObs(n, { ...p, src: 'rider', flagged: true });
-    S.mins += S.cur.eff.mins;
-    log(`Tap flagged and ignored. Pin ${n.id} doesn’t move.`);
-    riderResult('Flagged for review', 'The tap is saved but ignored by the address graph.', p, true);
-  };
+  addObs(n, { ...RV.p, src: 'rider', flagged: true });
+  log(`Rider said the customer asked for delivery there. Tap flagged for review and ignored; pin ${n.id} doesn’t move.`);
+  finish('flagged');
 }
-function riderResult(title, sub, p, flagged) {
-  const c = S.cur, n = c.node, e = c.eff, first = S.firstEffort[c.home.id];
-  const nextE = expected('verified', c.home.q);
+function finish(kind) {
+  const c = S.cur, n = c.node, e = c.eff;
+  S.mins += e.mins;
+  if (!S.firstEffort[c.home.id]) S.firstEffort[c.home.id] = e;
+  const first = S.firstEffort[c.home.id], nextE = expected('verified', c.home.q);
   let next = '';
-  if (n.status === 'verified' && c.st !== 'verified') {
-    next = `<div class="next"><b>Next order to this home</b>Straight to the door: about ${nextE.m} min and no calls, instead of ${first.mins} min and ${first.calls} call${first.calls === 1 ? '' : 's'} on the first delivery.</div>`;
-  } else if (c.st === 'verified' && first && first !== e) {
-    next = `<div class="next"><b>Compared with the first delivery here</b>${first.mins} min → ${e.mins} min to find the door · ${first.calls} → ${e.calls} calls</div>`;
-  }
-  $('riderBody').innerHTML = `
-    <div class="card result"><span class="badge ${flagged ? 'b-flag' : 'b-verified'}">${flagged ? 'Not counted' : 'Delivered'}</span>
-      <div class="big">${title}</div><div class="hi">${sub}</div>
-      <div class="effort"><span>⏱ ${e.mins} min finding the door</span><span>📞 ${e.calls} call${e.calls === 1 ? '' : 's'}</span></div></div>
-    ${next}
-    <div class="card"><div class="hi">Pin for this home now</div>${badge(n.status)}${n.code ? `<div class="mono code">${n.code}</div>` : ''}</div>
-    <button class="primary" id="rNext" type="button">Next order</button>`;
-  setStep(3); S.sel = n.id; render1();
-  $('rNext').onclick = () => idle();
+  if (n.status === 'verified' && c.st !== 'verified') next = `<b>Next order to this home</b>The rider will see “Exact door”: about ${nextE.m} min and no calls, instead of ${first.mins} min and ${first.calls} call${first.calls === 1 ? '' : 's'} on the first delivery.`;
+  else if (c.st === 'verified' && first !== e) next = `<b>Compared with the first delivery here</b>${first.mins} min → ${e.mins} min to find the door · ${first.calls} → ${e.calls} call${e.calls === 1 ? '' : 's'}`;
+  S.lastDel = { who: c.home.name.split('·')[0].trim(), tier: TIER[c.st], mins: e.mins, calls: e.calls, next };
+  RV = { stage: 'result', kind };
+  setStep(3); S.sel = n.id;
+  if (!S.busy) { lock(false); showHomeNote(); }
+  renderRider(); render1();
 }
 $('auto').onclick = async () => {
-  if (S.busy) return; S.busy = true; lock(true);
+  if (S.busy) return; S.busy = true; lock(true, 'Running 10 orders…');
   const sleep = ms => new Promise(r => setTimeout(r, ms)), weights = [4, 2, 2, 2, 3, 2, 2];
   for (let k = 0; k < 10; k++) {
     let r = rnd() * weights.reduce((a, b) => a + b), i = 0; while ((r -= weights[i]) > 0) i++;
@@ -995,6 +1077,9 @@ function render1() {
   $('metrics').innerHTML = [[S.orders, 'orders placed'], [S.nodes.filter(n => n.obs.length).length, 'pins in the graph'], [ver, 'verified pins'],
     [delivered ? (S.mins / delivered).toFixed(1) + ' min' : '—', 'average time to find the door']]
     .map(([v, l]) => `<div class="metric"><b>${v}</b><span>${l}</span></div>`).join('');
+  const L = S.lastDel;
+  $('effortBox').innerHTML = L ? `<div class="effbox"><div><b>Last delivery · ${esc(L.who)}</b> <span class="hi">· rider saw</span> <span class="rchip mini ${TIERS[L.tier].cls}">${bars(TIERS[L.tier].bars)}<b>${TR.en[L.tier]}</b></span></div>
+    <div class="effort" style="justify-content:flex-start"><span>⏱ ${L.mins} min finding the door</span><span>📞 ${L.calls} call${L.calls === 1 ? '' : 's'}</span></div>${L.next ? `<div class="next">${L.next}</div>` : ''}</div>` : '';
   drawMap1();
   const n = S.nodes.find(x => x.id === S.sel);
   if (n) {
