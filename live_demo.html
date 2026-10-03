@@ -8,19 +8,19 @@
 <style>
 :root{
   --bg:#F3EFF2; --panel:#FFFFFF; --ink:#231B21; --muted:#5E5560; --line:#E2DAE0;
-  --plum:#5B1A47; --plum-soft:#EFE2EB; --teal:#0B5A4C; --teal-soft:#DDF1EC; --amber:#7A4700; --amber-soft:#FBEBD0;
+  --plum:#5B1A47; --plum-soft:#EFE2EB; --teal:#0B5A4C; --teal-mid:#2E9C83; --teal-soft:#DDF1EC; --amber:#7A4700; --amber-soft:#FBEBD0;
   --blue:#1B4F9C; --blue-soft:#DCE7F8; --red:#B3122C; --red-soft:#F8DCE1; --grey-soft:#ECE8EC;
   --map:#E9E3E7; --lane:#FFFFFF; --bldg:#CFC6CC; --grid:rgba(35,27,33,.10); --phone:#231B21;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141013; --panel:#1E181C; --ink:#EDE6EB; --muted:#A99DA6; --line:#352C32;
-  --plum:#C77DB0; --plum-soft:#3A2333; --teal:#5FD0B4; --teal-soft:#123A31; --amber:#F0B45A; --amber-soft:#3B2B12;
+  --plum:#C77DB0; --plum-soft:#3A2333; --teal:#5FD0B4; --teal-mid:#3FB497; --teal-soft:#123A31; --amber:#F0B45A; --amber-soft:#3B2B12;
   --blue:#8DB4F2; --blue-soft:#1A2A45; --red:#FF7088; --red-soft:#43161F; --grey-soft:#2A2328;
   --map:#221B20; --lane:#33292F; --bldg:#433840; --grid:rgba(237,230,235,.10); --phone:#000;}}
 :root[data-theme="dark"]{
   --bg:#141013; --panel:#1E181C; --ink:#EDE6EB; --muted:#A99DA6; --line:#352C32;
-  --plum:#C77DB0; --plum-soft:#3A2333; --teal:#5FD0B4; --teal-soft:#123A31; --amber:#F0B45A; --amber-soft:#3B2B12;
+  --plum:#C77DB0; --plum-soft:#3A2333; --teal:#5FD0B4; --teal-mid:#3FB497; --teal-soft:#123A31; --amber:#F0B45A; --amber-soft:#3B2B12;
   --blue:#8DB4F2; --blue-soft:#1A2A45; --red:#FF7088; --red-soft:#43161F; --grey-soft:#2A2328;
   --map:#221B20; --lane:#33292F; --bldg:#433840; --grid:rgba(237,230,235,.10); --phone:#000;}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -29,92 +29,121 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Hind,"Noto Sa
 .mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;letter-spacing:.02em}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--plum);outline-offset:2px}
-.wrap{max-width:1500px;margin:0 auto;padding:18px 20px 40px}
+.wrap{max-width:1500px;margin:0 auto;padding:16px 20px 36px}
 
-header{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+header{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
 header h1{margin:0;font-size:clamp(24px,3vw,34px);font-weight:700;line-height:1.1}
-header p{margin:4px 0 0;color:var(--muted);max-width:70ch}
-.steps{display:flex;gap:6px;flex-wrap:wrap}
-.step{font-size:13.5px;font-weight:600;padding:6px 12px;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--muted)}
-.step.on{background:var(--plum);border-color:var(--plum);color:#fff}
+header p{margin:4px 0 0;color:var(--muted);max-width:72ch}
+.tabs{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px}
+.tab{border:0;background:transparent;padding:9px 16px;border-radius:8px;font-weight:600;cursor:pointer;color:var(--muted);font-size:15px}
+.tab[aria-selected="true"]{background:var(--plum);color:#fff}
+.view[hidden]{display:none}
+.lede{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:15px}
+.lede b{color:var(--plum)}
 
-.controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr) minmax(0,1.3fr);gap:16px;align-items:start}
+/* shared bits */
+.primary{height:44px;border:0;border-radius:10px;background:var(--plum);color:#fff;font-weight:600;font-size:15.5px;cursor:pointer;padding:0 16px}
+.primary:disabled{opacity:.45;cursor:default}
+.secondary{height:40px;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);font-weight:500;cursor:pointer;padding:0 14px}
+.secondary:disabled{opacity:.45;cursor:default}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;align-self:flex-start;white-space:nowrap}
+.b-verified{background:var(--teal-soft);color:var(--teal)}
+.b-unconfirmed{background:var(--amber-soft);color:var(--amber)}
+.b-customer{background:var(--blue-soft);color:var(--blue)}
+.b-none{background:var(--grey-soft);color:var(--muted)}
+.b-flag,.b-fail{background:var(--red-soft);color:var(--red)}
+.hi{font-size:13px;color:var(--muted)}
+.code{font-size:20px;font-weight:600;color:var(--plum)}
+.big{font-size:19px;font-weight:700;line-height:1.2}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin:8px 2px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* view 1 */
+.controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr) minmax(0,1.2fr);gap:14px;align-items:start}
 @media (max-width:1100px){.controls{grid-template-columns:1fr}}
-.controls label.lbl{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin-bottom:4px}
+.lbl{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin-bottom:4px}
 select,input[type=text]{width:100%;height:42px;border:1.5px solid var(--line);border-radius:8px;padding:0 10px;background:var(--bg)}
-.textrow{display:flex;gap:6px}
-.textrow input{flex:1}
+.textrow{display:flex;gap:6px}.textrow input{flex:1}
 .iconbtn{height:42px;padding:0 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer;white-space:nowrap;font-size:13.5px}
 .chips{margin-top:6px;font-size:12.5px;color:var(--muted);min-height:22px}
 .chip{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:99px;margin-right:4px}
 .chip.id{background:var(--teal-soft);color:var(--teal)}
 .chip.plain{background:var(--grey-soft);color:var(--muted);font-weight:500}
 .actions{display:flex;flex-direction:column;gap:8px}
-.primary{height:44px;border:0;border-radius:10px;background:var(--plum);color:#fff;font-weight:600;font-size:15.5px;cursor:pointer;padding:0 16px}
-.primary:disabled{opacity:.45;cursor:default}
-.secondary{height:40px;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);font-weight:500;cursor:pointer;padding:0 14px}
-.secondary:disabled{opacity:.45;cursor:default}
-.row2{display:flex;gap:8px}
-.row2>*{flex:1}
-.setting{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-top:6px}
+.row2{display:flex;gap:8px}.row2>*{flex:1}
+.setting{display:flex;align-items:center;gap:8px;font-size:13.5px}
 .setting input[type=range]{flex:1;accent-color:var(--plum)}
 .setting input[type=checkbox]{width:18px;height:18px;accent-color:var(--red)}
-
-.stage{display:grid;grid-template-columns:316px 316px minmax(0,1fr);gap:18px;margin-top:16px;align-items:start}
+details.more summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.stage{display:grid;grid-template-columns:300px 300px minmax(0,1fr);gap:16px;margin-top:14px;align-items:start}
 @media (max-width:1100px){.stage{grid-template-columns:1fr 1fr}.graphcol{grid-column:1/-1}}
 @media (max-width:700px){.stage{grid-template-columns:1fr}}
 .colhead{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 8px 4px}
 .colhead.on{color:var(--plum)}
-.phone{width:100%;max-width:316px;height:600px;margin:0 auto;border:9px solid var(--phone);border-radius:34px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .25s}
+.phone{width:100%;max-width:300px;height:600px;margin:0 auto;border:9px solid var(--phone);border-radius:34px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .25s}
 .phone.on{box-shadow:0 0 0 4px var(--plum)}
-.ph-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
-.avatar{width:36px;height:36px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
-.ph-head b{display:block;font-size:15px}
-.ph-head span{font-size:12px;color:var(--muted)}
-.ph-body{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ph-head{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--panel);border-bottom:1px solid var(--line)}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.ph-head b{display:block;font-size:15px}.ph-head span{font-size:12px;color:var(--muted)}
+.ph-body{flex:1;overflow:auto;padding:11px;display:flex;flex-direction:column;gap:9px}
 .empty{margin:auto;text-align:center;color:var(--muted);font-size:14px;padding:20px}
-.bubble{max-width:250px;background:var(--panel);border-radius:4px 14px 14px 14px;padding:10px 12px;font-size:14px;align-self:flex-start;display:flex;flex-direction:column;gap:6px}
+.bubble{max-width:240px;background:var(--panel);border-radius:4px 14px 14px 14px;padding:10px 12px;font-size:14px;align-self:flex-start;display:flex;flex-direction:column;gap:6px}
 .bubble.me{align-self:flex-end;background:var(--plum-soft);border-radius:14px 4px 14px 14px}
 .bubble .btn{height:40px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);cursor:pointer;font-weight:500;font-size:14px}
 .bubble .btn.main{background:var(--plum);border-color:var(--plum);color:#fff;font-weight:600}
 .bubble .btn:disabled{opacity:.5;cursor:default}
-.hi{font-size:13px;color:var(--muted)}
 .card{background:var(--panel);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px}
-.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;align-self:flex-start}
-.b-verified{background:var(--teal-soft);color:var(--teal)}
-.b-unconfirmed{background:var(--amber-soft);color:var(--amber)}
-.b-customer{background:var(--blue-soft);color:var(--blue)}
-.b-none{background:var(--grey-soft);color:var(--muted)}
-.b-flag{background:var(--red-soft);color:var(--red)}
-.big{font-size:19px;font-weight:700;line-height:1.2}
-.code{font-size:20px;font-weight:600;color:var(--plum)}
-.result{text-align:center;align-items:center;padding:18px 12px}
-.ring{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-
+.result{text-align:center;align-items:center;padding:16px 12px}
+.ring{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.effort{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.effort span{background:var(--bg);border-radius:8px;padding:4px 9px;font-size:13px;font-weight:600}
+.next{background:var(--teal-soft);color:var(--teal);border-radius:12px;padding:10px 12px;font-size:13.5px}
+.next b{display:block;font-size:14.5px}
 .graph{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;transition:box-shadow .25s}
 .graph.on{box-shadow:0 0 0 4px var(--plum)}
-.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
 @media (max-width:700px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .metric{background:var(--bg);border-radius:10px;padding:8px 10px}
 .metric b{display:block;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}
 .metric span{font-size:12px;color:var(--muted);line-height:1.25;display:block}
 .mapwrap{overflow-x:auto;border-radius:10px}
-.mapwrap svg{display:block;width:100%;min-width:560px;height:auto;background:var(--map);border-radius:10px}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin:8px 2px}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.mapwrap svg{display:block;width:100%;min-width:540px;height:auto;background:var(--map);border-radius:10px}
 .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:6px}
 @media (max-width:700px){.split{grid-template-columns:1fr}}
-.info,.log{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13.5px;min-height:150px}
+.info,.log{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13.5px;min-height:140px}
 .info h3,.log h3{margin:0 0 6px;font-size:14px}
-.log ol{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:6px;max-height:210px;overflow:auto}
+.log ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;max-height:200px;overflow:auto}
 .log li{border-left:3px solid var(--line);padding-left:8px}
 .log li.new{border-color:var(--plum)}
 .info ul{margin:4px 0 0;padding-left:18px}
-@keyframes pop{0%{r:9;opacity:.2}100%{opacity:1}}
+@keyframes pop{0%{opacity:.1}100%{opacity:1}}
 .pop{animation:pop .6s ease-out}
-@keyframes pulse{0%{stroke-width:0;stroke-opacity:.6}100%{stroke-width:10;stroke-opacity:0}}
+@keyframes pulse{0%{stroke-width:0;stroke-opacity:.7}100%{stroke-width:10;stroke-opacity:0}}
 .pulse{animation:pulse 1.2s ease-out 2}
-footer{margin-top:22px;color:var(--muted);font-size:12.5px}
+
+/* view 2 */
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.bar .day{font-size:22px;font-weight:700;min-width:110px}
+.bar .grow{flex:1}
+.bar .setting{min-width:260px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi .k{font-size:13.5px;color:var(--muted);line-height:1.3}
+.kpi .v{font-size:32px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;margin-top:4px}
+.kpi .was{font-size:13.5px;color:var(--muted)}
+.kpi .was b{color:var(--ink)}
+.n2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;margin-top:12px}
+@media (max-width:1000px){.n2{grid-template-columns:1fr}}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.box h3{margin:0 0 6px;font-size:15px}
+.chart svg{width:100%;height:auto;display:block}
+.chartkey{display:flex;gap:14px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.chartkey i{display:inline-block;width:14px;height:3px;vertical-align:4px;margin-right:5px}
+.history{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.history li{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--bg);border-radius:8px;padding:6px 8px;font-size:13.5px}
+.note{font-size:12.5px;color:var(--muted);margin-top:10px}
+footer{margin-top:20px;color:var(--muted);font-size:12.5px}
 @media (prefers-reduced-motion:reduce){.pop,.pulse{animation:none}}
 </style>
 </head>
@@ -123,69 +152,127 @@ footer{margin-top:22px;color:var(--muted);font-size:12.5px}
 <header>
   <div>
     <h1>Valmo Pata · live demo</h1>
-    <p>Place an order, let the customer respond, let the rider deliver, and watch the address graph learn where each home is. Every DIGIPIN shown is computed live from India Post's specification.</p>
+    <p>Every delivery teaches the network where a home is. The next parcel to that home goes straight to the door.</p>
   </div>
-  <div class="steps" aria-label="Demo progress">
-    <span class="step" id="s1">1 · Customer</span><span class="step" id="s2">2 · Rider</span><span class="step" id="s3">3 · Address graph</span>
+  <div class="tabs" role="tablist" aria-label="Demo views">
+    <button class="tab" role="tab" id="tab1" aria-selected="true" aria-controls="view1">① Follow one order</button>
+    <button class="tab" role="tab" id="tab2" aria-selected="false" aria-controls="view2">② Watch the neighbourhood</button>
   </div>
 </header>
 
-<section class="controls" aria-label="Place an order">
-  <div>
-    <label class="lbl" for="home">Who is ordering</label>
-    <select id="home"></select>
-    <div class="chips" id="homeNote"></div>
-  </div>
-  <div>
-    <label class="lbl" for="addr">Address as the customer types it (edit freely)</label>
-    <div class="textrow"><input type="text" id="addr" autocomplete="off"><button class="iconbtn" id="variant" type="button">Another way of writing it</button></div>
-    <div class="chips" id="tokens"></div>
-  </div>
-  <div class="actions">
-    <button class="primary" id="place" type="button">Place order</button>
-    <div class="row2"><button class="secondary" id="auto" type="button">Run 10 orders automatically</button><button class="secondary" id="reset" type="button">Reset</button></div>
-    <div class="setting"><label for="sigma">Rider GPS error</label><input type="range" id="sigma" min="2" max="25" value="6"><output id="sigmaOut" class="mono">±6 m</output></div>
-    <label class="setting"><input type="checkbox" id="corner"> Next rider taps “delivered” from the lane corner</label>
-  </div>
+<!-- ───────────── VIEW 1 ───────────── -->
+<section class="view" id="view1" role="tabpanel" aria-labelledby="tab1">
+  <div class="lede">Place an order, answer as the <b>customer</b>, deliver as the <b>rider</b>, and see the <b>address graph</b> learn. Order twice for the same person to see the difference a verified pin makes.</div>
+  <section class="controls" aria-label="Place an order">
+    <div>
+      <label class="lbl" for="home">Who is ordering</label>
+      <select id="home"></select>
+      <div class="chips" id="homeNote"></div>
+    </div>
+    <div>
+      <label class="lbl" for="addr">Address as the customer types it (edit freely)</label>
+      <div class="textrow"><input type="text" id="addr" autocomplete="off"><button class="iconbtn" id="variant" type="button">Another way of writing it</button></div>
+      <div class="chips" id="tokens"></div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="place" type="button">Place order</button>
+      <div class="row2"><button class="secondary" id="auto" type="button">Run 10 orders</button><button class="secondary" id="reset" type="button">Reset</button></div>
+      <label class="setting"><input type="checkbox" id="corner"> Next rider taps “delivered” from the lane corner</label>
+      <details class="more"><summary>More options</summary>
+        <div class="setting" style="margin-top:6px"><label for="sigma">Rider GPS error</label><input type="range" id="sigma" min="2" max="25" value="6"><output id="sigmaOut" class="mono">±6 m</output></div>
+      </details>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div>
+      <p class="colhead" id="h1">Step 1 · Customer</p>
+      <div class="phone" id="custPhone">
+        <div class="ph-head"><div class="avatar">V</div><div><b>Valmo by Meesho</b><span>Order updates · illustrative chat</span></div></div>
+        <div class="ph-body" id="custBody" aria-live="polite"></div>
+      </div>
+    </div>
+    <div>
+      <p class="colhead" id="h2">Step 2 · Rider</p>
+      <div class="phone" id="riderPhone">
+        <div class="ph-head"><div class="avatar" style="background:var(--ink)">R</div><div><b>Valmo Rider</b><span>Kalyanpur hub · Gali 3 beat</span></div></div>
+        <div class="ph-body" id="riderBody" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="graphcol">
+      <p class="colhead" id="h3">Step 3 · Address graph</p>
+      <div class="graph" id="graphBox">
+        <div class="metrics" id="metrics"></div>
+        <div class="mapwrap"><svg id="map" viewBox="-115 -48 245 96" role="img" aria-label="Map of Gali 3 with delivery taps and pins"></svg></div>
+        <div class="legend">
+          <span><i style="background:var(--teal);border-radius:50%"></i>Verified pin</span>
+          <span><i style="border:2px solid var(--amber);border-radius:50%"></i>Unconfirmed pin</span>
+          <span><i style="border:2px solid var(--blue);border-radius:50%"></i>Pin from customer</span>
+          <span><i style="background:var(--plum);width:7px;height:7px;border-radius:50%"></i>Rider tap</span>
+          <span><i style="background:var(--blue);width:7px;height:7px;border-radius:1px"></i>Customer shared</span>
+          <span><i style="background:var(--red);width:7px;height:7px;border-radius:50%"></i>Flagged tap</span>
+          <span>Grid = DIGIPIN squares</span>
+        </div>
+        <div class="split">
+          <div class="info" id="info"><h3>Pin details</h3><span class="hi">Click any pin on the map.</span></div>
+          <div class="log"><h3>What just happened</h3><ol id="log"></ol></div>
+        </div>
+      </div>
+    </div>
+  </section>
 </section>
 
-<section class="stage">
-  <div>
-    <p class="colhead" id="h1">Step 1 · Customer</p>
-    <div class="phone" id="custPhone">
-      <div class="ph-head"><div class="avatar">V</div><div><b>Valmo by Meesho</b><span>Order updates · illustrative chat</span></div></div>
-      <div class="ph-body" id="custBody" aria-live="polite"></div>
-    </div>
+<!-- ───────────── VIEW 2 ───────────── -->
+<section class="view" id="view2" role="tabpanel" aria-labelledby="tab2" hidden>
+  <div class="lede">A neighbourhood of <b>600 homes</b> on the day Valmo Pata launches: some are existing customers, the rest will order for the first time. As in the case pack, 40% of orders come from first-time addresses. Press play: customers share locations, riders deliver, and homes turn <b style="color:var(--teal)">green</b> once two deliveries agree. Compare deliveries <b>with</b> the network against the same orders <b>without</b> it.</div>
+  <div class="bar">
+    <div class="day" id="dayLbl" aria-live="polite">Day 0</div>
+    <button class="primary" id="play" type="button">▶ Play</button>
+    <button class="secondary" id="step" type="button">+1 day</button>
+    <select id="speed" aria-label="Speed" style="width:auto;height:40px"><option value="700">Slow</option><option value="300" selected>Normal</option><option value="90">Fast</option></select>
+    <button class="secondary" id="reset2" type="button">Reset</button>
+    <div class="grow"></div>
+    <div class="setting"><label for="share">Customers who share location when asked</label><input type="range" id="share" min="0" max="80" step="5" value="30"><output id="shareOut" style="font-weight:600;min-width:38px">30%</output></div>
+    <button class="secondary" id="add50" type="button">+50 customers share location now</button>
   </div>
-  <div>
-    <p class="colhead" id="h2">Step 2 · Rider</p>
-    <div class="phone" id="riderPhone">
-      <div class="ph-head"><div class="avatar" style="background:var(--ink)">R</div><div><b>Valmo Rider</b><span>Kalyanpur hub · Gali 3 beat</span></div></div>
-      <div class="ph-body" id="riderBody" aria-live="polite"></div>
-    </div>
-  </div>
-  <div class="graphcol">
-    <p class="colhead" id="h3">Step 3 · Address graph</p>
-    <div class="graph" id="graphBox">
-      <div class="metrics" id="metrics"></div>
-      <div class="mapwrap"><svg id="map" viewBox="-115 -48 245 96" role="img" aria-label="Map of Gali 3 with delivery taps and pins"></svg></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="n2">
+    <div class="box">
+      <h3>The address graph, home by home</h3>
+      <div class="mapwrap"><svg id="nmap" role="img" aria-label="Neighbourhood map coloured by pin status"></svg></div>
       <div class="legend">
-        <span><i style="background:var(--teal)"></i>Verified pin</span>
-        <span><i style="border:2px solid var(--amber)"></i>Unconfirmed pin</span>
-        <span><i style="border:2px solid var(--blue)"></i>Pin from customer</span>
-        <span><i style="background:var(--plum);width:7px;height:7px"></i>Rider tap</span>
-        <span><i style="background:var(--blue);width:7px;height:7px;border-radius:1px"></i>Customer shared</span>
-        <span><i style="background:var(--red);width:7px;height:7px"></i>Flagged tap (ignored)</span>
-        <span>Grid squares = DIGIPIN cells, ~3.5 m</span>
+        <span><i style="border:1.5px solid var(--bldg)"></i>Hasn't ordered yet</span>
+        <span><i style="background:var(--bldg)"></i>Ordered, no pin yet</span>
+        <span><i style="background:var(--blue-soft);border:2px solid var(--blue)"></i>Customer shared location</span>
+        <span><i style="background:var(--amber-soft);border:2px solid var(--amber)"></i>One delivery, unconfirmed</span>
+        <span><i style="background:var(--teal-mid)"></i>Verified pin</span>
+        <span><i style="background:var(--plum);border-radius:50%;width:8px;height:8px"></i>Delivered today</span>
       </div>
-      <div class="split">
-        <div class="info" id="info"><h3>Pin details</h3><span style="color:var(--muted)">Click any pin on the map.</span></div>
-        <div class="log"><h3>What just happened</h3><ol id="log"></ol></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="box" id="homeBox">
+        <h3>What happens to the next order</h3>
+        <div class="hi" id="homeHint">Click any home on the map to see each of its deliveries, or</div>
+        <button class="secondary" id="pickHome" type="button" style="margin-top:6px">Show me a home that got verified</button>
+        <div id="homeDetail"></div>
+      </div>
+      <div class="box chart">
+        <h3>Minutes a rider spends finding the door <span class="hi">(7-day average)</span></h3>
+        <div class="chartkey"><span><i style="background:var(--muted)"></i>Without Valmo Pata</span><span><i style="background:var(--plum)"></i>With Valmo Pata</span></div>
+        <svg id="c1" viewBox="0 0 420 170"></svg>
+      </div>
+      <div class="box chart">
+        <h3>Orders leaving the hub with a verified pin <span class="hi">(7-day average)</span></h3>
+        <svg id="c2" viewBox="0 0 420 150"></svg>
       </div>
     </div>
   </div>
+  <p class="note">How effort is modelled (assumptions, to be measured in a pilot): without a pin, riders search by the address text: about 4 min for a complete address, 8 for an incomplete one, 12 for landmark-only, with 0–2 calls to the customer. A verified pin takes the rider straight to the door, about 1.5 min. Address-related failures average 3.1% of orders (the case pack's 17% × 18% share), are about 5 times likelier on a home's first order than on repeat orders, and fall by 90% with a verified pin. A delivery takes 9 min plus search time, which sets deliveries per rider-hour. A saved parcel avoids ₹120 of reverse cost.</p>
 </section>
-<footer>Team Prod Gods, IIT Kanpur · Meesho DICE S3 · Valmo Bharosa. Homes and riders are simulated; the matching rules, pin verification and DIGIPIN encoding are the real prototype logic.</footer>
+
+<footer>Team Prod Gods, IIT Kanpur · Meesho DICE S3 · Valmo Bharosa. Homes, customers and riders are simulated. The matching rules, pin verification and DIGIPIN encoding are the real prototype logic.</footer>
 </div>
 
 <script>
@@ -666,29 +753,57 @@ const P = window.Pata, D = P.DIGIPIN, $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const rnd = Math.random, gauss = () => Math.sqrt(-2 * Math.log(rnd() + 1e-12)) * Math.cos(2 * Math.PI * rnd());
 
-// ── local metric frame around a spot in Kalyanpur ──
+// ══════════ shared: geometry, pins, effort model ══════════
 const BASE = P.toLL(420, 315);
 const MLAT = 110850, MLON = 111320 * Math.cos(BASE.lat * Math.PI / 180);
 const ll = (x, y) => ({ lat: BASE.lat + y / MLAT, lon: BASE.lon + x / MLON });
 const xy = p => ({ x: (p.lon - BASE.lon) * MLON, y: (p.lat - BASE.lat) * MLAT });
 const dist = (a, b) => P.distM(a, b);
-const SX = x => x, SY = y => -y;    // svg: metres, north up
 
-// ── the neighbourhood ──
+function pinStatus(obs) {
+  const good = obs.filter(o => !o.flagged);
+  if (!good.length) return { status: 'none', cons: null, code: null };
+  const c = P.consensus(good, true);
+  const status = (c.inliers >= 2 && c.spread <= 15 && good.some(o => o.src === 'rider')) ? 'verified'
+    : good.every(o => o.src === 'customer') ? 'customer' : 'unconfirmed';
+  return { status, cons: c, code: D.encode(c.lat, c.lon) };
+}
+const BADGE = { verified: ['b-verified', 'Verified pin'], unconfirmed: ['b-unconfirmed', 'Unconfirmed pin'], customer: ['b-customer', 'Pin from customer'], none: ['b-none', 'No pin yet'] };
+const badge = st => `<span class="badge ${BADGE[st][0]}">${BADGE[st][1]}</span>`;
+
+// effort model — assumptions, stated on the page
+const BASE_EFF = { 'Complete': { m: 4, c: 0.3, f: 0.015 }, 'Incomplete': { m: 8, c: 1, f: 0.035 }, 'Landmark only': { m: 12, c: 2, f: 0.06 } };
+const STATUS_EFF = { customer: { m: 3, c: 0.3, fx: 0.4 }, unconfirmed: { m: 3.5, c: 0.4, fx: 0.5 }, verified: { m: 1.5, c: 0.1, fx: 0.1 } };
+const TRIP = 9;   // minutes per delivery excluding search (travel + handover)
+function expected(st, q) { const b = BASE_EFF[q], s = STATUS_EFF[st]; return s ? { m: s.m, c: s.c, f: b.f * s.fx } : { m: b.m, c: b.c, f: b.f }; }
+function effort(st, q) {
+  const e = expected(st, q);
+  return { mins: Math.max(1, Math.round(e.m * (0.75 + 0.5 * rnd()))), calls: Math.max(0, Math.round(e.c + (rnd() - 0.5) * 1.2)), exp: e };
+}
+const perHour = m => 60 / (TRIP + m);
+
+// ══════════ tabs ══════════
+function showTab(k) {
+  [1, 2].forEach(i => { $('tab' + i).setAttribute('aria-selected', String(i === k)); $('view' + i).hidden = i !== k; });
+  if (k === 2) drawN();
+}
+$('tab1').onclick = () => showTab(1); $('tab2').onclick = () => showTab(2);
+
+// ══════════ VIEW 1 · one order ══════════
 const HOMES = [
-  { id: 'H1', name: 'Priya · House C-231', door: { x: 0, y: 5 }, rect: [-5, 7, 10, 12], label: 'C-231',
+  { id: 'H1', name: 'Priya · House C-231', q: 'Complete', door: { x: 0, y: 5 }, rect: [-5, 7, 10, 12], label: 'C-231',
     v: ['H.No C-231, Gali 3, near Hanuman Mandir, Kalyanpur', 'C-231 Kalyanpur', 'c231 gali 3 hanuman mandir ke paas', 'हनुमान मंदिर के पास, गली 3, C-231'] },
-  { id: 'H2', name: 'Rakesh · House C-233 (next door)', door: { x: 12, y: 5 }, rect: [7, 7, 10, 12], label: 'C-233',
+  { id: 'H2', name: 'Rakesh · House C-233 (next door)', q: 'Complete', door: { x: 12, y: 5 }, rect: [7, 7, 10, 12], label: 'C-233',
     v: ['C-233, Gali 3, Kalyanpur', 'H.No C-233 near Hanuman Mandir'] },
-  { id: 'H3', name: 'Sunita · blue-gate house (west)', door: { x: -40, y: -5 }, rect: [-46, -19, 12, 12], label: 'blue gate',
+  { id: 'H3', name: 'Sunita · blue-gate house (west)', q: 'Incomplete', door: { x: -40, y: -5 }, rect: [-46, -19, 12, 12], label: 'blue gate',
     v: ['blue gate wala ghar, Gali 3, Kalyanpur', 'blue gate house Gali 3'] },
-  { id: 'H4', name: 'Imran · another blue-gate house (east)', door: { x: 36, y: -5 }, rect: [30, -19, 12, 12], label: 'blue gate',
+  { id: 'H4', name: 'Imran · another blue-gate house (east)', q: 'Incomplete', door: { x: 36, y: -5 }, rect: [30, -19, 12, 12], label: 'blue gate',
     v: ['blue gate wala ghar, Gali 3, Kalyanpur'] },
-  { id: 'H5', name: 'Neha · Krishna Towers, flat 803', door: { x: 72, y: 5 }, rect: [58, 7, 28, 22], label: 'Krishna Towers', apt: true,
+  { id: 'H5', name: 'Neha · Krishna Towers, flat 803', q: 'Complete', door: { x: 72, y: 5 }, rect: [58, 7, 28, 22], label: 'Krishna Towers', apt: true,
     v: ['Flat 803, Krishna Towers, Gali 3', 'Krishna Towers 803, Masjid ke paas'] },
-  { id: 'H6', name: 'Arjun · Krishna Towers, flat 402', door: { x: 72, y: 5 }, apt: true,
+  { id: 'H6', name: 'Arjun · Krishna Towers, flat 402', q: 'Complete', door: { x: 72, y: 5 }, apt: true,
     v: ['Flat 402, Krishna Towers, Kalyanpur', 'Krishna Towers 402'] },
-  { id: 'H7', name: 'Meena · near Sharma Medical', door: { x: -66, y: 5 }, rect: [-72, 7, 12, 12], label: '',
+  { id: 'H7', name: 'Meena · near Sharma Medical', q: 'Landmark only', door: { x: -66, y: 5 }, rect: [-72, 7, 12, 12], label: '',
     v: ['Sharma Medical samne, Kalyanpur', 'शर्मा मेडिकल के सामने, कल्याणपुर'] }
 ];
 const EXTRA_RECTS = [[-30, 7, 10, 12], [-18, 7, 10, 12], [22, 7, 10, 12], [36, 7, 10, 12], [-58, 7, 10, 12], [-84, -19, 12, 12],
@@ -696,44 +811,24 @@ const EXTRA_RECTS = [[-30, 7, 10, 12], [-18, 7, 10, 12], [22, 7, 10, 12], [36, 7
 const LANDMARKS = [{ x: 5, y: -13, t: 'Hanuman Mandir' }, { x: 68, y: -13, t: 'Masjid' }, { x: -78, y: -13, t: 'Sharma Medical' }];
 const CORNERS = [{ x: -92, y: 0 }, { x: 112, y: 0 }];
 
-// ── state ──
 let S;
-function fresh() { return { nodes: [], saved: {}, orders: 0, dispatchedVerified: 0, flagged: 0, cur: null, log: [], sel: null, lastObs: null, busy: false }; }
+const fresh = () => ({ nodes: [], saved: {}, orders: 0, mins: 0, cur: null, log: [], sel: null, lastObs: null, busy: false, firstEffort: {} });
 S = fresh();
 
-// ── address graph logic ──
 const idTokens = text => P.normalize(text).filter(t => /\d/.test(t) && !/^gali\d+$/.test(t));
-function nodeStatus(n) {
-  const good = n.obs.filter(o => !o.flagged);
-  if (!good.length) { n.cons = null; n.code = null; return 'none'; }
-  const c = P.consensus(good, true); n.cons = c; n.code = D.encode(c.lat, c.lon);
-  if (c.inliers >= 2 && c.spread <= 15 && good.some(o => o.src === 'rider')) return 'verified';
-  if (good.every(o => o.src === 'customer')) return 'customer';
-  return 'unconfirmed';
-}
-function refresh(n) { n.status = nodeStatus(n); return n.status; }
+function refresh(n) { Object.assign(n, pinStatus(n.obs)); return n.status; }
 function match(home, text) {
   const s = S.saved[home.id];
-  if (s != null) return { node: S.nodes[s], via: 'Saved address of the same customer' };
+  if (s != null) return { node: S.nodes[s], via: 'Same customer, saved address' };
   const ids = idTokens(text);
   for (const n of S.nodes) { const hit = ids.find(t => n.ids.has(t)); if (hit) return { node: n, via: `Shares the house/flat number “${hit}” with an earlier address` }; }
-  return { node: null, via: ids.length ? 'New house/flat number, so a new pin' : 'Nothing identifying in the text, so a new pin (text alone can’t be trusted)' };
+  return { node: null, via: ids.length ? 'New house/flat number, so a new pin' : 'Nothing identifying in the text, so a new pin' };
 }
-function newNode(text) {
-  const n = { id: S.nodes.length + 1, texts: [], ids: new Set(), obs: [], status: 'none', cons: null, code: null, orders: 0 };
-  S.nodes.push(n); return n;
-}
-function attach(n, text, home) {
-  if (!n.texts.includes(text)) n.texts.push(text);
-  idTokens(text).forEach(t => n.ids.add(t));
-  S.saved[home.id] = S.nodes.indexOf(n);
-}
+function newNode() { const n = { id: S.nodes.length + 1, texts: [], ids: new Set(), obs: [], status: 'none', cons: null, code: null }; S.nodes.push(n); return n; }
+function attach(n, text, home) { if (!n.texts.includes(text)) n.texts.push(text); idTokens(text).forEach(t => n.ids.add(t)); S.saved[home.id] = S.nodes.indexOf(n); }
+function addObs(n, o) { o.t = Date.now(); n.obs.push(o); S.lastObs = o; refresh(n); }
+const log = t => S.log.push(t);
 
-// ── status vocabulary ──
-const BADGE = { verified: ['b-verified', 'Verified pin'], unconfirmed: ['b-unconfirmed', 'Unconfirmed pin'], customer: ['b-customer', 'Pin from customer'], none: ['b-none', 'No pin yet'] };
-const badge = st => `<span class="badge ${BADGE[st][0]}">${BADGE[st][1]}</span>`;
-
-// ── controls ──
 const homeSel = $('home');
 homeSel.innerHTML = HOMES.map((h, i) => `<option value="${i}">${esc(h.name)}</option>`).join('');
 let vIdx = 0;
@@ -748,19 +843,18 @@ function showTokens() {
 }
 function showHomeNote() {
   const h = HOMES[+homeSel.value], s = S.saved[h.id];
-  $('homeNote').innerHTML = s != null ? `Has ordered before · ${badge(S.nodes[s].status)}` : 'First order from this customer';
+  $('homeNote').innerHTML = (s != null ? `Has ordered before · ${badge(S.nodes[s].status)}` : 'First order from this customer') + ` · <span>${h.q.toLowerCase()} address</span>`;
 }
 $('sigma').oninput = () => $('sigmaOut').textContent = '±' + $('sigma').value + ' m';
-$('reset').onclick = () => { if (S.busy) return; S = fresh(); idle(); render(); };
+$('reset').onclick = () => { if (S.busy) return; S = fresh(); idle(); render1(); };
 $('place').onclick = () => placeOrder(HOMES[+homeSel.value], $('addr').value.trim());
 
 function setStep(k) {
-  [1, 2, 3].forEach(i => { $('s' + i).classList.toggle('on', i === k); $('h' + i).classList.toggle('on', i === k); });
+  [1, 2, 3].forEach(i => $('h' + i).classList.toggle('on', i === k));
   $('custPhone').classList.toggle('on', k === 1); $('riderPhone').classList.toggle('on', k === 2); $('graphBox').classList.toggle('on', k === 3);
 }
 function lock(on) { ['place', 'auto', 'variant', 'reset'].forEach(id => $(id).disabled = on); homeSel.disabled = on; $('addr').disabled = on; }
 
-// ── flow ──
 function idle() {
   setStep(0); lock(false);
   $('custBody').innerHTML = '<div class="empty">Waiting for an order.<br>Pick a customer above and press <b>Place order</b>.</div>';
@@ -770,13 +864,11 @@ function idle() {
 function placeOrder(home, text) {
   if (!text) return;
   S.orders++;
-  const m = match(home, text);
-  const node = m.node || newNode(text);
+  const m = match(home, text), node = m.node || newNode();
   attach(node, text, home);
-  const st0 = node.status;
-  S.cur = { no: 'VLM00128' + String(40 + S.orders).padStart(2, '0'), home, text, node, via: m.via, st0 };
+  S.cur = { no: 'VLM00128' + String(40 + S.orders).padStart(2, '0'), home, text, node };
   log(`Order #${S.cur.no}: “${text}” → ${m.node ? 'linked to pin ' + node.id : 'new pin ' + node.id}. ${m.via}.`);
-  lock(true); setStep(1); customerAsk(); render();
+  lock(true); setStep(1); customerAsk(); render1();
 }
 function customerAsk() {
   const c = S.cur, known = c.node.status === 'verified';
@@ -784,152 +876,141 @@ function customerAsk() {
     <div class="bubble">
       <div>Namaste! Your Meesho order arrives tomorrow (cash on delivery).</div>
       <div class="hi">Delivering to: <b style="color:var(--ink)">${esc(c.text)}</b></div>
-      ${known ? `<div>We already know where your door is <span class="mono" style="font-weight:600">${c.node.code}</span>. Just confirm.</div>`
-              : `<div>Help the rider find your door: share your location once.</div>`}
+      ${known ? `<div>We already know where your door is. Just confirm.</div>` : `<div>Help the rider find your door: share your location once.</div>`}
       ${known ? '' : '<button class="btn main" id="cShare" type="button">Share my location</button>'}
       <button class="btn ${known ? 'main' : ''}" id="cConfirm" type="button">${known ? 'Confirm order' : 'Confirm without location'}</button>
     </div>`;
   if (!known) $('cShare').onclick = () => customerReply(true);
   $('cConfirm').onclick = () => customerReply(false);
-  riderWaiting();
+  $('riderBody').innerHTML = '<div class="empty">Waiting for the customer to confirm…</div>';
 }
 function customerReply(share) {
   const c = S.cur;
-  let reply = '';
+  let reply;
   if (share) {
     const d = c.home.door, p = ll(d.x + gauss() * 8, d.y + gauss() * 8);
     addObs(c.node, { ...p, src: 'customer' });
-    reply = `<div class="bubble me"><b>Location shared</b><span class="hi">${esc(c.text)}</span></div>
-             <div class="bubble"><div>Thank you! Order confirmed. Your location: <span class="mono" style="font-weight:600">${D.encode(p.lat, p.lon)}</span></div></div>`;
-    log(`Customer shared a location → added to pin ${c.node.id} (${BADGE[c.node.status][1].toLowerCase()}).`);
-  } else {
-    reply = `<div class="bubble me"><b>Confirmed</b></div><div class="bubble"><div>Thank you! Your order is confirmed.</div></div>`;
-  }
+    reply = `<div class="bubble me"><b>📍 Location shared</b></div><div class="bubble">Thank you! Order confirmed.</div>`;
+    log(`Customer shared a location → pin ${c.node.id} now: ${BADGE[c.node.status][1].toLowerCase()}.`);
+  } else reply = `<div class="bubble me"><b>Confirmed</b></div><div class="bubble">Thank you! Your order is confirmed.</div>`;
   $('custBody').querySelectorAll('button').forEach(b => b.disabled = true);
   $('custBody').insertAdjacentHTML('beforeend', reply);
-  c.dispatchStatus = c.node.status;
-  if (c.dispatchStatus === 'verified') S.dispatchedVerified++;
-  setStep(2); riderOrder(); render();
+  c.st = c.node.status;
+  c.eff = effort(c.st, c.home.q);
+  setStep(2); riderOrder(); render1();
 }
-function riderWaiting() { $('riderBody').innerHTML = '<div class="empty">Waiting for the customer to confirm…</div>'; }
 function riderOrder() {
-  const c = S.cur, n = c.node, st = c.dispatchStatus;
+  const c = S.cur, n = c.node, st = c.st;
+  const how = st === 'verified' ? 'Navigate straight to the pin' : st === 'none' ? 'No location: search using the address text' : 'Navigate to the pin, then check';
   $('riderBody').innerHTML = `
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center"><span class="mono hi">#${c.no}</span>${badge(st)}</div>
       <div style="font-weight:500">${esc(c.text)}</div>
-      ${n.code ? `<div><div class="hi">DIGIPIN</div><div class="mono code">${n.code}</div></div>` : '<div class="hi">No location yet. Find it from the address text.</div>'}
-      <div class="hi">${st === 'verified' ? `${n.cons.inliers} sources agree within ${Math.max(1, Math.round(n.cons.spread))} m` : st === 'customer' ? 'Location shared by the customer, not yet confirmed by a delivery' : st === 'unconfirmed' ? 'One delivery so far; not yet confirmed' : 'First delivery to this home'}</div>
+      ${n.code ? `<div><div class="hi">DIGIPIN</div><div class="mono code">${n.code}</div></div>` : ''}
+      <div class="hi">${how}</div>
     </div>
-    <div class="card"><div class="hi">Cash to collect</div><div class="big">₹${[299, 349, 389, 449, 629][S.orders % 5]}</div></div>
-    <button class="primary" id="rTap" type="button">Arrive and mark delivered</button>
-    <div class="hi" style="text-align:center">Phone GPS ±${$('sigma').value} m${$('corner').checked ? ' · <b style="color:var(--red)">rider will tap from the lane corner</b>' : ''}</div>`;
+    <button class="primary" id="rTap" type="button">Go to the door and mark delivered</button>
+    <div class="hi" style="text-align:center">${$('corner').checked ? '<b style="color:var(--red)">This rider will tap from the lane corner</b>' : '&nbsp;'}</div>`;
   $('rTap').onclick = () => riderTap($('corner').checked);
 }
 function tapPoint(fromCorner) {
   const c = S.cur, d = c.home.door;
-  if (fromCorner) {
-    const k = CORNERS.reduce((a, b) => Math.abs(b.x - d.x) < Math.abs(a.x - d.x) ? b : a);
-    return ll(k.x + gauss() * 3, k.y + gauss() * 3);
-  }
+  if (fromCorner) { const k = CORNERS.reduce((a, b) => Math.abs(b.x - d.x) < Math.abs(a.x - d.x) ? b : a); return ll(k.x + gauss() * 3, k.y + gauss() * 3); }
   const s = +$('sigma').value * (c.home.apt ? 1.3 : 1);
   return ll(d.x + gauss() * s, d.y + gauss() * s);
 }
 function riderTap(fromCorner) {
   const c = S.cur, n = c.node, p = tapPoint(fromCorner);
   $('corner').checked = false;
-  const before = n.status, prior = n.cons;
-  const dd = prior ? dist(p, prior) : null;
+  const before = n.status, prior = n.cons, dd = prior ? dist(p, prior) : null;
   if (before === 'verified' && dd > 40) return riderWarn(p, dd);
   addObs(n, { ...p, src: 'rider' });
   const after = n.status;
-  let icon, title, sub, tone;
-  if (!prior) { tone = 'b-none'; title = 'First delivery to this home'; sub = 'Your tap created this home’s pin. ₹2 bonus when the next delivery lands within 15 m.'; }
-  else if (dd <= 15) { tone = 'b-verified'; title = `You’re ${Math.round(dd)} m from the pin`; sub = after === 'verified' && before !== 'verified' ? 'This delivery agrees with the earlier one. The pin is now verified.' : 'Inside the 15 m zone. Your tap keeps the pin accurate.'; }
-  else if (dd <= 40) { tone = 'b-unconfirmed'; title = `${Math.round(dd)} m from the pin`; sub = 'Accepted. The pin adjusts towards where deliveries actually happen.'; }
-  else { tone = 'b-unconfirmed'; title = `${Math.round(dd)} m from the earlier location`; sub = 'The two locations disagree, so the pin stays unconfirmed until another delivery settles it.'; }
-  log(`Rider tapped delivered at ${D.encode(p.lat, p.lon)}${fromCorner ? ' (from the lane corner)' : ''} → pin ${n.id} status: ${BADGE[after][1].toLowerCase()}.`);
-  riderResult(tone, title, sub, p);
+  let title, sub;
+  if (!prior) { title = 'First delivery to this home'; sub = 'Your tap created this home’s pin.'; }
+  else if (dd <= 15) { title = `${Math.round(dd)} m from the pin`; sub = after === 'verified' && before !== 'verified' ? 'This agrees with the earlier location. The pin is now verified.' : 'Inside the 15 m zone. The pin stays accurate.'; }
+  else if (dd <= 40) { title = `${Math.round(dd)} m from the pin`; sub = 'Accepted. The pin adjusts towards real deliveries.'; }
+  else { title = `${Math.round(dd)} m from the earlier location`; sub = 'These disagree, so the pin stays unconfirmed for now.'; }
+  S.mins += c.eff.mins;
+  if (!S.firstEffort[c.home.id]) S.firstEffort[c.home.id] = c.eff;
+  log(`Delivered: ${c.eff.mins} min to find the door, ${c.eff.calls} call${c.eff.calls === 1 ? '' : 's'}. Pin ${n.id} now: ${BADGE[after][1].toLowerCase()}.`);
+  riderResult(title, sub, p, false);
 }
 function riderWarn(p, dd) {
   const n = S.cur.node;
   $('riderBody').innerHTML = `
-    <div class="card result"><div class="ring" style="background:var(--red-soft);color:var(--red)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="10"></circle></svg></div>
+    <div class="card result"><div class="ring" style="background:var(--red-soft);color:var(--red)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="10"></circle></svg></div>
       <div class="big">You’re ${Math.round(dd)} m from the pin</div>
-      <div class="hi">This home has a verified pin at <span class="mono">${n.code}</span>. Walk to the door before marking delivered, or call the customer.</div></div>
+      <div class="hi">This home has a verified pin. Walk to the door before marking delivered.</div></div>
     <button class="primary" id="rRetry" type="button">Walk to the door and tap again</button>
     <button class="secondary" id="rForce" type="button">Mark anyway (flag for review)</button>`;
-  log(`Geofence: rider tried to mark delivered ${Math.round(dd)} m from verified pin ${n.id}. Blocked.`);
-  render();
+  log(`Blocked: rider tried to mark delivered ${Math.round(dd)} m from verified pin ${n.id}.`);
+  render1();
   $('rRetry').onclick = () => riderTap(false);
   $('rForce').onclick = () => {
-    addObs(n, { ...p, src: 'rider', flagged: true }); S.flagged++;
-    log(`Tap flagged for review. It is ignored, so pin ${n.id} doesn’t move.`);
-    riderResult('b-flag', 'Flagged for review', 'The tap is saved but ignored by the address graph. Repeated flags show up in the rider’s quality score.', p);
+    addObs(n, { ...p, src: 'rider', flagged: true });
+    S.mins += S.cur.eff.mins;
+    log(`Tap flagged and ignored. Pin ${n.id} doesn’t move.`);
+    riderResult('Flagged for review', 'The tap is saved but ignored by the address graph.', p, true);
   };
 }
-function riderResult(tone, title, sub, p) {
-  const n = S.cur.node;
+function riderResult(title, sub, p, flagged) {
+  const c = S.cur, n = c.node, e = c.eff, first = S.firstEffort[c.home.id];
+  const nextE = expected('verified', c.home.q);
+  let next = '';
+  if (n.status === 'verified' && c.st !== 'verified') {
+    next = `<div class="next"><b>Next order to this home</b>Straight to the door: about ${nextE.m} min and no calls, instead of ${first.mins} min and ${first.calls} call${first.calls === 1 ? '' : 's'} on the first delivery.</div>`;
+  } else if (c.st === 'verified' && first && first !== e) {
+    next = `<div class="next"><b>Compared with the first delivery here</b>${first.mins} min → ${e.mins} min to find the door · ${first.calls} → ${e.calls} calls</div>`;
+  }
   $('riderBody').innerHTML = `
-    <div class="card result"><span class="badge ${tone}">${tone === 'b-flag' ? 'Not counted' : 'Delivered'}</span>
+    <div class="card result"><span class="badge ${flagged ? 'b-flag' : 'b-verified'}">${flagged ? 'Not counted' : 'Delivered'}</span>
       <div class="big">${title}</div><div class="hi">${sub}</div>
-      <div class="hi">Your tap <span class="mono">${D.encode(p.lat, p.lon)}</span></div></div>
+      <div class="effort"><span>⏱ ${e.mins} min finding the door</span><span>📞 ${e.calls} call${e.calls === 1 ? '' : 's'}</span></div></div>
+    ${next}
     <div class="card"><div class="hi">Pin for this home now</div>${badge(n.status)}${n.code ? `<div class="mono code">${n.code}</div>` : ''}</div>
     <button class="primary" id="rNext" type="button">Next order</button>`;
-  setStep(3); S.sel = n.id; render();
+  setStep(3); S.sel = n.id; render1();
   $('rNext').onclick = () => idle();
 }
-function addObs(n, o) { o.t = Date.now(); n.obs.push(o); S.lastObs = o; refresh(n); }
-
-// ── autoplay ──
 $('auto').onclick = async () => {
   if (S.busy) return; S.busy = true; lock(true);
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
-  const weights = [4, 2, 2, 2, 3, 2, 2];
+  const sleep = ms => new Promise(r => setTimeout(r, ms)), weights = [4, 2, 2, 2, 3, 2, 2];
   for (let k = 0; k < 10; k++) {
     let r = rnd() * weights.reduce((a, b) => a + b), i = 0; while ((r -= weights[i]) > 0) i++;
     const h = HOMES[i], text = h.v[Math.floor(rnd() * h.v.length)];
     homeSel.value = i; $('addr').value = text; showTokens();
-    placeOrder(h, text); await sleep(450);
-    const askShare = S.cur.node.status !== 'verified' && rnd() < 0.3;
-    customerReply(askShare); await sleep(450);
+    placeOrder(h, text); await sleep(420);
+    customerReply(S.cur.node.status !== 'verified' && rnd() < 0.3); await sleep(420);
     const corner = rnd() < 0.08;
-    const n = S.cur.node;
-    if (n.status === 'verified' && corner) { riderTap(true); await sleep(500); if ($('rRetry')) riderTap(false); }
+    if (S.cur.node.status === 'verified' && corner) { riderTap(true); await sleep(450); if ($('rRetry')) riderTap(false); }
     else riderTap(corner);
-    await sleep(550);
+    await sleep(520);
   }
-  S.busy = false; idle(); render();
+  S.busy = false; idle(); render1();
 };
 
-// ── render graph ──
-function render() {
-  const nodes = S.nodes.filter(n => n.obs.length);
-  const ver = S.nodes.filter(n => n.status === 'verified').length;
-  $('metrics').innerHTML = [
-    [S.orders, 'orders placed'], [nodes.length, 'pins in the graph'], [ver, 'verified pins'],
-    [S.orders ? Math.round(S.dispatchedVerified / S.orders * 100) + '%' : '—', 'orders sent out with a verified pin'], [S.flagged, 'taps flagged']
-  ].map(([v, l]) => `<div class="metric"><b>${v}</b><span>${l}</span></div>`).join('');
-  drawMap();
+function render1() {
+  const ver = S.nodes.filter(n => n.status === 'verified').length, delivered = S.nodes.reduce((a, n) => a + n.obs.filter(o => o.src === 'rider').length, 0);
+  $('metrics').innerHTML = [[S.orders, 'orders placed'], [S.nodes.filter(n => n.obs.length).length, 'pins in the graph'], [ver, 'verified pins'],
+    [delivered ? (S.mins / delivered).toFixed(1) + ' min' : '—', 'average time to find the door']]
+    .map(([v, l]) => `<div class="metric"><b>${v}</b><span>${l}</span></div>`).join('');
+  drawMap1();
   const n = S.nodes.find(x => x.id === S.sel);
   if (n) {
-    const r = n.obs.filter(o => o.src === 'rider' && !o.flagged).length, cu = n.obs.filter(o => o.src === 'customer').length, f = n.obs.filter(o => o.flagged).length;
-    $('info').innerHTML = `<h3>Pin ${n.id} ${badge(n.status)}</h3>
-      ${n.code ? `<div class="mono code">${n.code}</div>` : '<div class="hi">No location yet</div>'}
-      <div class="hi">${r} rider tap${r === 1 ? '' : 's'} · ${cu} customer share${cu === 1 ? '' : 's'}${f ? ` · ${f} flagged` : ''}${n.cons ? ` · spread ${Math.round(n.cons.spread || 0)} m` : ''}</div>
+    const r = n.obs.filter(o => o.src === 'rider' && !o.flagged).length, cu = n.obs.filter(o => o.src === 'customer').length;
+    $('info').innerHTML = `<h3>Pin ${n.id} ${badge(n.status)}</h3>${n.code ? `<div class="mono code">${n.code}</div>` : ''}
+      <div class="hi">${r} deliver${r === 1 ? 'y' : 'ies'} · ${cu} customer share${cu === 1 ? '' : 's'}</div>
       <div style="margin-top:6px"><b>Addresses linked to this pin</b></div><ul>${n.texts.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
   }
-  $('log').innerHTML = S.log.slice(-14).reverse().map((t, i) => `<li class="${i === 0 ? 'new' : ''}">${esc(t)}</li>`).join('') || '<li style="color:var(--muted);border:0;padding:0">Nothing yet.</li>';
+  $('log').innerHTML = S.log.slice(-14).reverse().map((t, i) => `<li class="${i === 0 ? 'new' : ''}">${esc(t)}</li>`).join('') || '<li class="hi" style="border:0;padding:0">Nothing yet.</li>';
 }
-function drawMap() {
-  const svg = $('map'); let s = '';
-  // DIGIPIN level-10 grid
-  const d = 36 / Math.pow(4, 10), a = ll(-115, -48), b = ll(130, 48);
-  let g = '';
-  for (let k = Math.ceil((a.lon - 63.5) / d); k <= Math.floor((b.lon - 63.5) / d); k++) { const X = xy({ lat: BASE.lat, lon: 63.5 + k * d }).x; g += `M${X.toFixed(2)} -48V48`; }
-  for (let k = Math.ceil((a.lat - 2.5) / d); k <= Math.floor((b.lat - 2.5) / d); k++) { const Y = xy({ lat: 2.5 + k * d, lon: BASE.lon }).y; g += `M-115 ${SY(Y).toFixed(2)}H130`; }
-  s += `<rect x="-115" y="-48" width="245" height="96" fill="var(--map)"></rect>`;
-  s += `<rect x="-115" y="-4" width="245" height="8" fill="var(--lane)"></rect>`;
+function drawMap1() {
+  const SY = y => -y; let s = '';
+  const d = 36 / Math.pow(4, 10), a = ll(-115, -48), b = ll(130, 48); let g = '';
+  for (let k = Math.ceil((a.lon - 63.5) / d); k <= Math.floor((b.lon - 63.5) / d); k++) g += `M${xy({ lat: BASE.lat, lon: 63.5 + k * d }).x.toFixed(2)} -48V48`;
+  for (let k = Math.ceil((a.lat - 2.5) / d); k <= Math.floor((b.lat - 2.5) / d); k++) g += `M-115 ${SY(xy({ lat: 2.5 + k * d, lon: BASE.lon }).y).toFixed(2)}H130`;
+  s += `<rect x="-115" y="-48" width="245" height="96" fill="var(--map)"></rect><rect x="-115" y="-4" width="245" height="8" fill="var(--lane)"></rect>`;
   for (const c of CORNERS) s += `<rect x="${c.x - 4}" y="-48" width="8" height="96" fill="var(--lane)"></rect>`;
   s += `<path d="${g}" stroke="var(--grid)" stroke-width="0.25" fill="none"></path>`;
   for (const r of EXTRA_RECTS) s += `<rect x="${r[0]}" y="${SY(r[1] + r[3])}" width="${r[2]}" height="${r[3]}" fill="var(--bldg)" rx="0.6"></rect>`;
@@ -938,35 +1019,159 @@ function drawMap() {
     if (h.label) s += `<text x="${r[0] + r[2] / 2}" y="${SY(r[1] + r[3] / 2) + 1.2}" font-size="3.2" text-anchor="middle" fill="var(--ink)" font-family="Hind, sans-serif" font-weight="600">${esc(h.label)}</text>`;
   }
   for (const l of LANDMARKS) s += `<text x="${l.x}" y="${SY(l.y)}" font-size="3" text-anchor="middle" fill="var(--muted)" font-family="Hind, sans-serif">${esc(l.t)}</text>`;
-  s += `<text x="-110" y="2.6" font-size="3.4" fill="var(--muted)" font-family="Hind, sans-serif">Gali 3</text>`;
-  s += `<text x="-92" y="-42" font-size="2.8" text-anchor="middle" fill="var(--muted)" font-family="Hind, sans-serif">lane corner</text>`;
-  // links from selected pin to its observations
+  s += `<text x="-110" y="2.6" font-size="3.4" fill="var(--muted)" font-family="Hind, sans-serif">Gali 3</text><text x="-92" y="-42" font-size="2.8" text-anchor="middle" fill="var(--muted)" font-family="Hind, sans-serif">lane corner</text>`;
   const sel = S.nodes.find(n => n.id === S.sel);
   if (sel && sel.cons) { const c = xy(sel.cons); for (const o of sel.obs) { const p = xy(o); s += `<line x1="${c.x}" y1="${SY(c.y)}" x2="${p.x}" y2="${SY(p.y)}" stroke="${o.flagged ? 'var(--red)' : 'var(--ink)'}" stroke-opacity=".35" stroke-width="0.35"></line>`; } }
-  // observations
   for (const n of S.nodes) for (const o of n.obs) {
     const p = xy(o), X = p.x, Y = SY(p.y), cls = o === S.lastObs ? 'pop' : '';
     if (o.flagged) s += `<path class="${cls}" d="M${X - 1.4} ${Y - 1.4}L${X + 1.4} ${Y + 1.4}M${X + 1.4} ${Y - 1.4}L${X - 1.4} ${Y + 1.4}" stroke="var(--red)" stroke-width="0.7"></path>`;
     else if (o.src === 'customer') s += `<rect class="${cls}" x="${X - 1}" y="${Y - 1}" width="2" height="2" fill="var(--blue)"></rect>`;
     else s += `<circle class="${cls}" cx="${X}" cy="${Y}" r="1.2" fill="var(--plum)"></circle>`;
   }
-  // pins
   for (const n of S.nodes) {
     if (!n.cons) continue;
     const p = xy(n.cons), X = p.x, Y = SY(p.y);
     const col = n.status === 'verified' ? 'var(--teal)' : n.status === 'customer' ? 'var(--blue)' : 'var(--amber)';
-    const fill = n.status === 'verified' ? col : 'var(--panel)';
-    const isNew = S.lastObs && n.obs.includes(S.lastObs);
-    if (isNew) s += `<circle class="pulse" cx="${X}" cy="${Y}" r="4" fill="none" stroke="${col}"></circle>`;
-    s += `<g data-node="${n.id}" style="cursor:pointer"><circle cx="${X}" cy="${Y}" r="${S.sel === n.id ? 4.2 : 3.4}" fill="${fill}" stroke="${col}" stroke-width="${S.sel === n.id ? 1.2 : 0.9}"></circle>
+    if (S.lastObs && n.obs.includes(S.lastObs)) s += `<circle class="pulse" cx="${X}" cy="${Y}" r="4" fill="none" stroke="${col}"></circle>`;
+    s += `<g data-node="${n.id}" style="cursor:pointer"><circle cx="${X}" cy="${Y}" r="${S.sel === n.id ? 4.2 : 3.4}" fill="${n.status === 'verified' ? col : 'var(--panel)'}" stroke="${col}" stroke-width="${S.sel === n.id ? 1.2 : 0.9}"></circle>
       <text x="${X}" y="${Y + 1.2}" font-size="3.4" text-anchor="middle" font-weight="700" fill="${n.status === 'verified' ? '#fff' : col}" font-family="Hind, sans-serif" pointer-events="none">${n.id}</text></g>`;
   }
-  svg.innerHTML = s;
-  svg.querySelectorAll('[data-node]').forEach(el => el.addEventListener('click', () => { S.sel = +el.dataset.node; render(); }));
+  $('map').innerHTML = s;
+  $('map').querySelectorAll('[data-node]').forEach(el => el.addEventListener('click', () => { S.sel = +el.dataset.node; render1(); }));
 }
-function log(t) { S.log.push(t); }
 
-idle(); render();
+// ══════════ VIEW 2 · the neighbourhood ══════════
+const NW = 640, NH = 540, LANES = 8, ORDERS_PER_DAY = 11, MAX_DAY = 90, FIRST_TIME = 0.40, EXISTING = 0.25;
+let N, timer = null;
+function buildN() {
+  const homes = [], qPick = () => { const r = rnd(); return r < 0.5 ? 'Complete' : r < 0.77 ? 'Incomplete' : 'Landmark only'; };
+  let id = 0;
+  for (let l = 0; l < LANES; l++) {
+    const ly = 40 + l * 66;
+    for (const side of [1, -1]) for (let x = 8; x <= NW - 18; x += 16) {
+      if (Math.abs(x - 316) < 12) continue;                       // cross street
+      const door = { x: x + 5.5, y: ly + side * 6 };
+      homes.push({ id: id++, lane: l + 1, no: `${'ABCDEFGH'[l]}-${100 + Math.round(x / 16) * 2 + (side > 0 ? 0 : 1)}`,
+        rect: [x, side > 0 ? ly + 7 : ly - 20, 11, 13], door, q: qPick(),
+        w: Math.exp(gauss() * 0.8), existing: rnd() < EXISTING, obs: [], status: 'none', cons: null, code: null, shared: false, hist: [], today: false });
+    }
+  }
+  return { homes, day: 0, series: [], saved: 0, sel: null, totals: { orders: 0, mins: 0, mins0: 0, f: 0, f0: 0 } };
+}
+N = buildN();
+// 40% of orders come from homes that have never ordered (case-pack calibration); the rest are repeat customers
+// existing customers have ordered before launch (but have no pins yet); everyone else is new to Meesho
+function drawHome() {
+  const fresh = N.homes.filter(h => !h.existing && !h.hist.length), old = N.homes.filter(h => h.existing || h.hist.length);
+  if (fresh.length && (!old.length || rnd() < FIRST_TIME)) return fresh[Math.floor(rnd() * fresh.length)];
+  const tot = old.reduce((a, h) => a + h.w, 0); let r = rnd() * tot;
+  for (const h of old) { r -= h.w; if (r <= 0) return h; }
+  return old[old.length - 1];
+}
+function obsN(h, src) {
+  const s = src === 'customer' ? 8 : 6;
+  if (src === 'rider' && rnd() < 0.06) { const p = ll(318 + gauss() * 4, h.door.y + gauss() * 4); return { ...p, src }; }   // tapped from the cross street
+  const p = ll(h.door.x + gauss() * s, h.door.y + gauss() * s); return { ...p, src };
+}
+function setStatus(h) { Object.assign(h, pinStatus(h.obs)); }
+function stepDay() {
+  if (N.day >= MAX_DAY) { pause(); return; }
+  N.day++;
+  N.homes.forEach(h => h.today = false);
+  const share = +$('share').value / 100, n = Math.max(1, Math.round(ORDERS_PER_DAY + gauss() * 6));
+  const d = { day: N.day, orders: 0, verified: 0, first: 0, mins: 0, mins0: 0, f: 0, f0: 0 };
+  for (let k = 0; k < n; k++) {
+    const h = drawHome();
+    if (h.status !== 'verified' && !h.shared && rnd() < share) { h.obs.push(obsN(h, 'customer')); h.shared = true; setStatus(h); }
+    const firstTime = !h.existing && !h.hist.length, fm = firstTime ? 1.9 : 0.4;   // ~75% of address failures on first orders, as in our dataset
+    const st = h.status, e = effort(st, h.q), e0 = expected('none', h.q);
+    e.exp = { ...e.exp, f: e.exp.f * fm }; const f0 = e0.f * fm;
+    d.orders++; if (st === 'verified') d.verified++; if (firstTime) d.first++;
+    d.mins += e.mins; d.mins0 += e0.m; d.f += e.exp.f; d.f0 += f0;
+    const failed = rnd() < e.exp.f;
+    h.hist.push({ day: N.day, st, mins: e.mins, calls: e.calls, failed });
+    if (!failed) { h.obs.push(obsN(h, 'rider')); setStatus(h); h.today = true; }
+  }
+  N.series.push(d);
+  const t = N.totals; t.orders += d.orders; t.mins += d.mins; t.mins0 += d.mins0; t.f += d.f; t.f0 += d.f0;
+  drawN();
+}
+function play() { if (timer) return; $('play').textContent = '❚❚ Pause'; timer = setInterval(stepDay, +$('speed').value); }
+function pause() { clearInterval(timer); timer = null; $('play').textContent = N.day >= MAX_DAY ? 'Finished' : '▶ Play'; $('play').disabled = N.day >= MAX_DAY; }
+$('play').onclick = () => timer ? pause() : play();
+$('step').onclick = () => { pause(); stepDay(); };
+$('speed').onchange = () => { if (timer) { pause(); play(); } };
+$('reset2').onclick = () => { pause(); N = buildN(); $('play').disabled = false; $('play').textContent = '▶ Play'; drawN(); };
+$('share').oninput = () => $('shareOut').textContent = $('share').value + '%';
+$('add50').onclick = () => {
+  const pool = N.homes.filter(h => !h.shared && h.status !== 'verified').sort(() => rnd() - 0.5).slice(0, 50);
+  pool.forEach(h => { h.obs.push(obsN(h, 'customer')); h.shared = true; setStatus(h); });
+  drawN();
+};
+$('pickHome').onclick = () => {
+  const c = N.homes.filter(h => h.status === 'verified' && h.hist.length >= 3 && h.hist.length <= 6 && h.hist[0].st === 'none' && !h.hist[0].failed);
+  if (c.length) { N.sel = c[Math.floor(rnd() * c.length)].id; drawN(); }
+  else $('homeHint').textContent = 'No home is verified yet. Press play for a few days first, or';
+};
+
+function drawN() {
+  if ($('view2').hidden) return;
+  $('dayLbl').textContent = 'Day ' + N.day;
+  // KPIs: last 7 days vs the same orders without the network
+  const last = N.series.slice(-7), sum = k => last.reduce((a, d) => a + d[k], 0);
+  const ord = sum('orders'), vshare = ord ? sum('verified') / ord : 0, m = ord ? sum('mins') / ord : null, m0 = ord ? sum('mins0') / ord : null;
+  const saved = Math.max(0, N.totals.f0 - N.totals.f), cnt = s => N.homes.filter(h => h.status === s).length;
+  const fmt = (v, d = 1) => v == null ? '—' : v.toFixed(d);
+  $('kpis').innerHTML = `
+    <div class="kpi"><div class="k">Orders leaving the hub with a verified pin</div><div class="v" style="color:var(--teal)">${Math.round(vshare * 100)}%</div><div class="was">${cnt('verified')} of ${N.homes.length} homes verified · ${ord ? Math.round(sum('first') / ord * 100) : 0}% of orders are first-time addresses</div></div>
+    <div class="kpi"><div class="k">Average time to find the door</div><div class="v">${fmt(m)} min</div><div class="was">Without Valmo Pata: <b>${fmt(m0)} min</b></div></div>
+    <div class="kpi"><div class="k">Deliveries per rider-hour</div><div class="v">${m == null ? '—' : perHour(m).toFixed(1)}</div><div class="was">Without Valmo Pata: <b>${m0 == null ? '—' : perHour(m0).toFixed(1)}</b></div></div>
+    <div class="kpi"><div class="k">Address-related failed deliveries avoided</div><div class="v">${N.totals.f0 ? Math.round(saved / N.totals.f0 * 100) : 0}%</div><div class="was">At Valmo scale: <b>≈ ${N.totals.orders ? Math.round(saved / N.totals.orders * 1e5).toLocaleString('en-IN') : 0} parcels</b> and <b>₹${N.totals.orders ? (saved / N.totals.orders * 1e5 * 120 / 1e5).toFixed(1) : 0} lakh</b> saved per 1 lakh orders</div></div>`;
+  // map
+  let s = `<rect x="0" y="0" width="${NW}" height="${NH}" fill="var(--map)"></rect>`;
+  for (let l = 0; l < LANES; l++) { const ly = 40 + l * 66; s += `<rect x="0" y="${NH - ly - 5}" width="${NW}" height="10" fill="var(--lane)"></rect><text x="2" y="${NH - ly + 3.5}" font-size="8" fill="var(--muted)" font-family="Hind, sans-serif">Gali ${l + 1}</text>`; }
+  s += `<rect x="311" y="0" width="14" height="${NH}" fill="var(--lane)"></rect>`;
+  const FILL = { none: ['var(--bldg)', 'none'], customer: ['var(--blue-soft)', 'var(--blue)'], unconfirmed: ['var(--amber-soft)', 'var(--amber)'], verified: ['var(--teal-mid)', 'none'] };
+  for (const h of N.homes) {
+    const [x, y, w, hh] = h.rect, Y = NH - y - hh;
+    const [f, st] = h.hist.length || h.shared ? FILL[h.status] : ['none', 'var(--bldg)'];
+    s += `<rect data-h="${h.id}" x="${x}" y="${Y}" width="${w}" height="${hh}" rx="1.5" fill="${f}" stroke="${N.sel === h.id ? 'var(--ink)' : st}" stroke-width="${N.sel === h.id ? 2.4 : st === 'none' ? 0 : 1.2}" style="cursor:pointer"></rect>`;
+    if (h.today) s += `<circle cx="${h.door.x}" cy="${NH - h.door.y}" r="2.4" fill="var(--plum)" pointer-events="none"></circle>`;
+  }
+  const svg = $('nmap'); svg.setAttribute('viewBox', `0 0 ${NW} ${NH}`); svg.innerHTML = s;
+  svg.querySelectorAll('[data-h]').forEach(el => el.addEventListener('click', () => { N.sel = +el.dataset.h; drawN(); }));
+  homeDetail(); charts();
+}
+function homeDetail() {
+  const h = N.homes.find(x => x.id === N.sel);
+  if (!h) { $('homeDetail').innerHTML = ''; return; }
+  $('homeHint').textContent = 'Click any home on the map to see each of its deliveries, or';
+  const shown = h.hist.length > 6 ? [h.hist[0], null, ...h.hist.slice(-4)] : h.hist;
+  const rows = shown.map(o => o === null ? '<li style="display:block;text-align:center;background:none;padding:0" class="hi">⋯</li>' : `<li><span class="hi">Day ${o.day}</span><span>${badge(o.st)}</span><span>${o.failed ? '<span class="badge b-fail">Not found · RTO</span>' : `<b>${o.mins} min</b> · ${o.calls} call${o.calls === 1 ? '' : 's'}`}</span></li>`).join('');
+  const firstOk = h.hist.find(o => !o.failed), lastV = [...h.hist].reverse().find(o => o.st === 'verified' && !o.failed);
+  const story = firstOk && lastV && firstOk !== lastV ? `<div class="next" style="margin-top:8px"><b>${firstOk.mins} min → ${lastV.mins} min</b>The first delivery searched using the address text. Once the pin was verified, the rider went straight to the door.</div>` : '';
+  $('homeDetail').innerHTML = `<div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>House ${h.no}, Gali ${h.lane}</b>${badge(h.status)}</div>
+    <div class="hi">${h.q} address${h.code ? ` · DIGIPIN <span class="mono">${h.code}</span>` : ''} · ${h.hist.length} order${h.hist.length === 1 ? '' : 's'}</div>
+    ${h.hist.length ? `<ul class="history">${rows}</ul>` : '<div class="hi" style="margin-top:6px">No orders yet.</div>'}${story}`;
+}
+function charts() {
+  const S2 = N.series.map((d, i, a) => { const w = a.slice(Math.max(0, i - 6), i + 1), o = {}; for (const k of ['orders', 'verified', 'mins', 'mins0']) o[k] = w.reduce((x, y) => x + y[k], 0); return o; }), W = 420, l = 30, r = 8, t = 8, X = i => l + (W - l - r) * (i / MAX_DAY);
+  // c1: minutes
+  { const H = 170, b = 22, Y = v => t + (H - t - b) * (1 - v / 14); let s = '';
+    for (const g of [0, 4, 8, 12]) s += `<line x1="${l}" x2="${W - r}" y1="${Y(g)}" y2="${Y(g)}" stroke="var(--line)"></line><text x="${l - 5}" y="${Y(g) + 4}" font-size="10" text-anchor="end" fill="var(--muted)">${g}</text>`;
+    for (const dd of [0, 30, 60, 90]) s += `<text x="${X(dd)}" y="${H - 6}" font-size="10" text-anchor="${dd === 90 ? 'end' : dd === 0 ? 'start' : 'middle'}" fill="var(--muted)">day ${dd}</text>`;
+    const pts = k => S2.map((d, i) => `${X(i + 1)},${Y(d.orders ? d[k] / d.orders : 0)}`).join(' ');
+    if (S2.length) s += `<polyline fill="none" stroke="var(--muted)" stroke-dasharray="4 3" stroke-width="2" points="${pts('mins0')}"></polyline><polyline fill="none" stroke="var(--plum)" stroke-width="2.4" points="${pts('mins')}"></polyline>`;
+    $('c1').innerHTML = s; }
+  // c2: verified share
+  { const H = 150, b = 22, Y = v => t + (H - t - b) * (1 - v); let s = '';
+    for (const g of [0, .5, 1]) s += `<line x1="${l}" x2="${W - r}" y1="${Y(g)}" y2="${Y(g)}" stroke="var(--line)"></line><text x="${l - 5}" y="${Y(g) + 4}" font-size="10" text-anchor="end" fill="var(--muted)">${g * 100}%</text>`;
+    for (const dd of [0, 30, 60, 90]) s += `<text x="${X(dd)}" y="${H - 6}" font-size="10" text-anchor="${dd === 90 ? 'end' : dd === 0 ? 'start' : 'middle'}" fill="var(--muted)">day ${dd}</text>`;
+    if (S2.length) s += `<polyline fill="none" stroke="var(--teal)" stroke-width="2.4" points="${S2.map((d, i) => `${X(i + 1)},${Y(d.orders ? d.verified / d.orders : 0)}`).join(' ')}"></polyline>`;
+    $('c2').innerHTML = s; }
+}
+
+idle(); render1();
 })();
 </script>
 </body>

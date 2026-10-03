@@ -8,6 +8,6 @@ st.set_page_config(page_title="Valmo Pata prototype", page_icon="📍", layout="
 
 pg = st.navigation([
     st.Page("live_demo_page.py", title="Live demo", icon="📍", default=True),
-    st.Page("dashboard.py", title="Impact at scale", icon="📊"),
+    st.Page("dashboard.py", title="What it's worth", icon="📊"),
 ], position="top")
 pg.run()

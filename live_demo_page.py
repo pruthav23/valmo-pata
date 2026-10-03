@@ -11,5 +11,5 @@ if not HTML.exists():
 st.markdown("<style>section[data-testid='stMain'] .block-container{padding-top:1.2rem;padding-left:1.2rem;padding-right:1.2rem;max-width:100%}</style>",
             unsafe_allow_html=True)
 st.caption("Place an order, respond as the customer, deliver as the rider, and watch the address graph update. "
-           "Open **Impact at scale** (top menu) for the 30,000-order view.")
-components.html(HTML.read_text(encoding="utf-8"), height=1180, scrolling=True)
+           "Open **What it's worth** (top menu) for the 30,000-order view.")
+components.html(HTML.read_text(encoding="utf-8"), height=1340, scrolling=True)

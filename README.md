@@ -4,7 +4,7 @@ Meesho DICE S3 · Team Prod Gods, IIT Kanpur
 
 Two pages:
 - **Live demo**: customer phone → rider phone → address graph, updating as you click.
-- **Impact at scale**: 30,000 synthetic orders calibrated to the Meesho case pack (80% COD, 20% / 5% RTO, 15 / 17 / 22% by distance). Not real Meesho data.
+- **What it's worth**: 30,000 synthetic orders calibrated to the Meesho case pack (80% COD, 20% / 5% RTO, 15 / 17 / 22% by distance). Not real Meesho data.
 
 ## Files
     app.py               entry point (page menu)
