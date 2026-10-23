@@ -212,7 +212,7 @@ footer{margin-top:20px;color:var(--muted);font-size:12.5px}
     <div>
       <p class="colhead" id="h2">Step 2 · Rider</p>
       <div class="phone" id="riderPhone">
-        <div class="ph-head"><div class="avatar" style="background:var(--ink)">R</div><div><b>Valmo Rider</b><span id="riderSub">Kalyanpur hub · Gali 3</span></div>
+        <div class="ph-head"><div class="avatar" style="background:var(--ink)">R</div><div><b>Valmo Rider</b><span id="riderSub">Kalyanpur · Gali 3</span></div>
           <div class="lang" role="group" aria-label="Rider language" data-lang-for="r"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="hi" aria-pressed="false">हिं</button></div></div>
         <div class="ph-body" id="riderBody" aria-live="polite"></div>
       </div>
@@ -230,6 +230,7 @@ footer{margin-top:20px;color:var(--muted);font-size:12.5px}
           <span><i style="background:var(--plum);width:7px;height:7px;border-radius:50%"></i>Rider tap</span>
           <span><i style="background:var(--blue);width:7px;height:7px;border-radius:1px"></i>Customer shared</span>
           <span><i style="background:var(--red);width:7px;height:7px;border-radius:50%"></i>Flagged tap</span>
+          <span><i style="border:2px dashed var(--orange);border-radius:50%"></i>Search zone from neighbours</span>
           <span>Grid = DIGIPIN squares</span>
         </div>
         <div class="split">
@@ -792,7 +793,7 @@ const badge = st => `<span class="badge ${BADGE[st][0]}">${BADGE[st][1]}</span>`
 
 // effort model — assumptions, stated on the page
 const BASE_EFF = { 'Complete': { m: 4, c: 0.3, f: 0.015 }, 'Incomplete': { m: 8, c: 1, f: 0.035 }, 'Landmark only': { m: 12, c: 2, f: 0.06 } };
-const STATUS_EFF = { customer: { m: 3, c: 0.3, fx: 0.4 }, unconfirmed: { m: 3.5, c: 0.4, fx: 0.5 }, verified: { m: 1.5, c: 0.1, fx: 0.1 } };
+const STATUS_EFF = { area: { m: 6, c: 0.8, fx: 0.7 }, customer: { m: 3, c: 0.3, fx: 0.4 }, unconfirmed: { m: 3.5, c: 0.4, fx: 0.5 }, verified: { m: 1.5, c: 0.1, fx: 0.1 } };
 const TRIP = 9;   // minutes per delivery excluding search (travel + handover)
 function expected(st, q) { const b = BASE_EFF[q], s = STATUS_EFF[st]; return s ? { m: s.m, c: s.c, f: b.f * s.fx } : { m: b.m, c: b.c, f: b.f }; }
 function effort(st, q) {
@@ -813,7 +814,7 @@ const HOMES = [
   { id: 'H1', name: 'Priya · House C-231', q: 'Complete', door: { x: 0, y: 5 }, rect: [-5, 7, 10, 12], label: 'C-231',
     v: ['H.No C-231, Gali 3, near Hanuman Mandir, Kalyanpur', 'C-231 Kalyanpur', 'c231 gali 3 hanuman mandir ke paas', 'हनुमान मंदिर के पास, गली 3, C-231'] },
   { id: 'H2', name: 'Rakesh · House C-233 (next door)', q: 'Complete', door: { x: 12, y: 5 }, rect: [7, 7, 10, 12], label: 'C-233',
-    v: ['C-233, Gali 3, Kalyanpur', 'H.No C-233 near Hanuman Mandir'] },
+    v: ['next to Hanuman Mandir, Kalyanpur', 'C-233, Gali 3, Kalyanpur', 'H.No C-233 near Hanuman Mandir'] },
   { id: 'H3', name: 'Sunita · blue-gate house (west)', q: 'Incomplete', door: { x: -40, y: -5 }, rect: [-46, -19, 12, 12], label: 'blue gate',
     v: ['blue gate wala ghar, Gali 3, Kalyanpur', 'blue gate house Gali 3'] },
   { id: 'H4', name: 'Imran · another blue-gate house (east)', q: 'Incomplete', door: { x: 36, y: -5 }, rect: [30, -19, 12, 12], label: 'blue gate',
@@ -847,6 +848,25 @@ function newNode() { const n = { id: S.nodes.length + 1, texts: [], ids: new Set
 function attach(n, text, home) { if (!n.texts.includes(text)) n.texts.push(text); idTokens(text).forEach(t => n.ids.add(t)); S.saved[home.id] = S.nodes.indexOf(n); }
 function addObs(n, o) { o.t = Date.now(); n.obs.push(o); S.lastObs = o; refresh(n); }
 const log = t => S.log.push(t);
+
+// ── learn from neighbours: a landmark in the text + verified pins whose addresses name the same landmark ──
+const LANDMARK_WORDS = [
+  { key: 'hanuman-mandir', words: ['hanuman', 'mandir'], en: 'Hanuman Mandir', hi: 'हनुमान मंदिर' },
+  { key: 'masjid', words: ['masjid'], en: 'Masjid', hi: 'मस्जिद' },
+  { key: 'sharma-medical', words: ['sharma', 'medical'], en: 'Sharma Medical', hi: 'शर्मा मेडिकल' },
+  { key: 'krishna-towers', words: ['krishna', 'towers'], en: 'Krishna Towers', hi: 'कृष्णा टावर्स' }
+];
+const landmarkIn = text => { const t = new Set(P.normalize(text)); return LANDMARK_WORDS.find(l => l.words.every(w => t.has(w))) || null; };
+function findZone(c) {
+  const lm = landmarkIn(c.text);
+  if (!lm) return null;
+  const src = S.nodes.filter(n => n !== c.node && n.status === 'verified' && n.texts.some(tx => { const l = landmarkIn(tx); return l && l.key === lm.key; }));
+  if (!src.length) return null;
+  const center = { lat: src.reduce((a, n) => a + n.cons.lat, 0) / src.length, lon: src.reduce((a, n) => a + n.cons.lon, 0) / src.length };
+  const spread = Math.max(0, ...src.map(n => dist(n.cons, center)));
+  return { lm, src, center, r: Math.min(50, Math.max(30, 2 * spread + 20)), code: D.encode(center.lat, center.lon), code8: D.encode(center.lat, center.lon, 8) };
+}
+const orderQuality = (home, text) => idTokens(text).length ? home.q : landmarkIn(text) ? 'Landmark only' : 'Incomplete';
 
 const homeSel = $('home');
 homeSel.innerHTML = HOMES.map((h, i) => `<option value="${i}">${esc(h.name)}</option>`).join('');
@@ -891,9 +911,9 @@ const TC = {
         shared: '📍 लोकेशन भेज दी', confirmed: 'कन्फ़र्म', thanks: 'धन्यवाद! आपका ऑर्डर कन्फ़र्म हो गया है।' }
 };
 const TR = {
-  en: { sub: 'Kalyanpur hub · Gali 3', idle: 'No parcel assigned yet.', waiting: 'Waiting for the customer to confirm…', cash: 'cash', address: 'Address',
+  en: { sub: 'Kalyanpur · Gali 3', idle: 'No parcel assigned yet.', waiting: 'Waiting for the customer to confirm…', cash: 'cash', address: 'Address',
         exact: 'Exact door', exactTip: 'Go straight to the pin.', near: 'Near this spot', nearTip: 'The home is inside the circle. Check the house number.',
-        area: 'Search area', areaTip: 'Look around this area. Call the customer if needed.', none: 'Address only', noneTip: 'No map location yet. Follow the address and call the customer if needed.',
+        area: 'Search area', areaTip: 'Look around this area. Call the customer if needed.', areaTipLm: lm => `Near ${lm}, inside the circle. Check house numbers.`, none: 'Address only', noneTip: 'No map location yet. Follow the address and call the customer if needed.',
         noMap: 'No map location for this address yet', nav: 'Navigate', call: 'Call customer', delivered: 'Delivered',
         far: d => `You seem far from the customer's door (about ${d} m)`, farTip: 'Go closer, or call the customer.', closer: "I'll go closer", here: 'Customer asked me to deliver here',
         done: 'Delivered', collected: 'cash collected', review: 'Sent for review', reviewTip: "The delivery is recorded, but this location won't change the map.",
@@ -901,7 +921,7 @@ const TR = {
         msg_confirmed: 'Location confirmed. Next time this home shows as “Exact door”.', msg_matched: 'Thanks! The location matched.', msg_adjust: "Thanks! We'll double-check this location." },
   hi: { sub: 'कल्याणपुर हब · गली 3', idle: 'अभी कोई पार्सल नहीं।', waiting: 'ग्राहक के कन्फ़र्म करने का इंतज़ार…', cash: 'कैश', address: 'पता',
         exact: 'सही दरवाज़ा', exactTip: 'सीधे पिन पर जाएँ।', near: 'इस जगह के पास', nearTip: 'घर इस घेरे के अंदर है। मकान नंबर देख लें।',
-        area: 'इस इलाके में', areaTip: 'इस इलाके में ढूँढें। ज़रूरत हो तो ग्राहक को कॉल करें।', none: 'सिर्फ़ पता', noneTip: 'अभी मैप पर लोकेशन नहीं है। पते से ढूँढें, ज़रूरत हो तो कॉल करें।',
+        area: 'इस इलाके में', areaTip: 'इस इलाके में ढूँढें। ज़रूरत हो तो ग्राहक को कॉल करें।', areaTipLm: lm => `${lm} के पास, घेरे के अंदर। मकान नंबर देखें।`, none: 'सिर्फ़ पता', noneTip: 'अभी मैप पर लोकेशन नहीं है। पते से ढूँढें, ज़रूरत हो तो कॉल करें।',
         noMap: 'इस पते की मैप लोकेशन अभी नहीं है', nav: 'रास्ता देखें', call: 'ग्राहक को कॉल करें', delivered: 'डिलीवर हो गया',
         far: d => `आप ग्राहक के दरवाज़े से दूर लग रहे हैं (लगभग ${d} मीटर)`, farTip: 'पास जाएँ, या ग्राहक को कॉल करें।', closer: 'मैं पास जाता हूँ', here: 'ग्राहक ने यहीं डिलीवरी करने को कहा',
         done: 'डिलीवर हो गया', collected: 'कैश लिया', review: 'जाँच के लिए भेजा गया', reviewTip: 'डिलीवरी दर्ज हो गई, पर इसकी लोकेशन मैप नहीं बदलेगी।',
@@ -909,7 +929,7 @@ const TR = {
         msg_confirmed: 'लोकेशन पक्की हो गई। अगली बार यह घर “सही दरवाज़ा” दिखेगा।', msg_matched: 'धन्यवाद! लोकेशन सही मिली।', msg_adjust: 'धन्यवाद! हम इस लोकेशन को दोबारा जाँचेंगे।' }
 };
 // what the rider sees: one of four simple levels, never codes or counts
-const TIER = { verified: 'exact', unconfirmed: 'near', customer: 'near', none: 'none' };
+const TIER = { verified: 'exact', unconfirmed: 'near', customer: 'near', area: 'area', none: 'none' };
 const TIERS = { exact: { cls: 'r-exact', bars: 4, r: 8 }, near: { cls: 'r-near', bars: 3, r: 22 }, area: { cls: 'r-area', bars: 2, r: 50 }, none: { cls: 'r-none', bars: 1, r: 0 } };
 const bars = k => `<span class="bars" aria-hidden="true">${[1, 2, 3, 4].map(i => `<i style="height:${3 + i * 3}px" class="${i <= k ? 'on' : ''}"></i>`).join('')}</span>`;
 let CV = { stage: 'idle' }, RV = { stage: 'idle' };
@@ -964,7 +984,16 @@ function customerReply(share) {
   }
   CV.stage = 'replied'; CV.share = share; renderCust();
   c.st = c.node.status;
-  c.eff = effort(c.st, c.home.q);
+  c.q = orderQuality(c.home, c.text);
+  c.zone = !c.node.cons ? findZone(c) : null;
+  if (c.zone) {
+    c.st = 'area';
+    const z = c.zone;
+    log(`No location for this address yet, but ${z.src.length} verified home${z.src.length > 1 ? 's' : ''} nearby also wrote “${z.lm.en}” (pin ${z.src.map(n => n.id).join(', ')}). Rider gets a ${Math.round(z.r)} m search zone around DIGIPIN ${z.code} (area ${z.code8}, ~60 m).`);
+  } else if (!c.node.cons && landmarkIn(c.text)) {
+    log(`“${landmarkIn(c.text).en}” is in the address, but no verified home has named it yet, so the rider gets the address only.`);
+  }
+  c.eff = effort(c.st, c.q);
   RV = { stage: 'order' };
   lock(true, 'Step 2: deliver on the rider phone ↓'); setStep(2); renderRider(); render1();
 }
@@ -977,6 +1006,11 @@ function sceneSVG() {
   return s;
 }
 function riderMap(c, tier) {
+  if (tier === 'area' && c.zone) {
+    const p = xy(c.zone.center), X = p.x, Y = -p.y, r = c.zone.r, w = Math.max(68, r * 2.8), hgt = Math.max(44, r * 2.25);
+    return `<div class="rmap"><svg viewBox="${(X - w / 2).toFixed(1)} ${(Y - hgt / 2).toFixed(1)} ${w.toFixed(1)} ${hgt.toFixed(1)}" role="img" aria-label="Map with the search area">${sceneSVG()}
+      <circle cx="${X}" cy="${Y}" r="${r}" fill="var(--orange)" fill-opacity=".12" stroke="var(--orange)" stroke-width=".7" stroke-dasharray="2.2 1.6"></circle></svg></div>`;
+  }
   if (tier === 'none' || !c.node.cons) return `<div class="nomap">${TR[LANG.r].noMap}</div>`;
   const p = xy(c.node.cons), X = p.x, Y = -p.y, r = TIERS[tier].r, col = tier === 'exact' ? 'var(--teal)' : 'var(--amber)';
   return `<div class="rmap"><svg viewBox="${(X - 34).toFixed(1)} ${(Y - 22).toFixed(1)} 68 44" role="img" aria-label="Map with the delivery location">${sceneSVG()}
@@ -992,7 +1026,7 @@ function renderRider() {
     h = `<div class="card">
         <div class="rtop"><b>${esc(c.home.name.split('·')[0].trim())}</b><span class="cash">₹${c.cash} ${t.cash}</span></div>
         ${riderMap(c, tier)}
-        <div class="rchip ${tt.cls}">${bars(tt.bars)}<div><b>${t[tier]}</b><span>${t[tier + 'Tip']}</span></div></div>
+        <div class="rchip ${tt.cls}">${bars(tt.bars)}<div><b>${t[tier]}</b><span>${tier === 'area' && c.zone ? t.areaTipLm(c.zone.lm[LANG.r]) : t[tier + 'Tip']}</span></div></div>
         <div><div class="hi">${t.address}</div><div style="font-weight:500">${esc(c.text)}</div></div>
       </div>
       <div class="row2"><button class="secondary" type="button">${t.nav}</button><button class="secondary" type="button">${t.call}</button></div>
@@ -1045,10 +1079,14 @@ function finish(kind) {
   const c = S.cur, n = c.node, e = c.eff;
   S.mins += e.mins;
   if (!S.firstEffort[c.home.id]) S.firstEffort[c.home.id] = e;
-  const first = S.firstEffort[c.home.id], nextE = expected('verified', c.home.q);
+  const first = S.firstEffort[c.home.id], nextE = expected('verified', c.q || c.home.q);
   let next = '';
   if (n.status === 'verified' && c.st !== 'verified') next = `<b>Next order to this home</b>The rider will see “Exact door”: about ${nextE.m} min and no calls, instead of ${first.mins} min and ${first.calls} call${first.calls === 1 ? '' : 's'} on the first delivery.`;
   else if (c.st === 'verified' && first !== e) next = `<b>Compared with the first delivery here</b>${first.mins} min → ${e.mins} min to find the door · ${first.calls} → ${e.calls} call${e.calls === 1 ? '' : 's'}`;
+  if (c.zone && !next) {
+    const base = expected('none', c.q);
+    next = `<b>Learned from a neighbour</b>Without the search zone a landmark-only address takes about ${base.m} min and ${base.c} calls; this one took ${e.mins} min. This delivery now gives ${esc(c.home.name.split('·')[0].trim())} a pin of their own.`;
+  }
   S.lastDel = { who: c.home.name.split('·')[0].trim(), tier: TIER[c.st], mins: e.mins, calls: e.calls, next };
   RV = { stage: 'result', kind };
   setStep(3); S.sel = n.id;
@@ -1105,6 +1143,12 @@ function drawMap1() {
   }
   for (const l of LANDMARKS) s += `<text x="${l.x}" y="${SY(l.y)}" font-size="3" text-anchor="middle" fill="var(--muted)" font-family="Hind, sans-serif">${esc(l.t)}</text>`;
   s += `<text x="-110" y="2.6" font-size="3.4" fill="var(--muted)" font-family="Hind, sans-serif">Gali 3</text><text x="-92" y="-42" font-size="2.8" text-anchor="middle" fill="var(--muted)" font-family="Hind, sans-serif">lane corner</text>`;
+  const Z = S.cur && S.cur.zone;
+  if (Z && (RV.stage === 'order' || RV.stage === 'result' || RV.stage === 'warn')) {
+    const zc = xy(Z.center);
+    s += `<circle cx="${zc.x}" cy="${SY(zc.y)}" r="${Z.r}" fill="var(--orange)" fill-opacity=".08" stroke="var(--orange)" stroke-width=".6" stroke-dasharray="2 1.5"></circle>`;
+    s += `<text x="${zc.x}" y="${SY(zc.y) - Z.r - 1.5}" font-size="3" text-anchor="middle" fill="var(--orange)" font-family="Hind, sans-serif" font-weight="600">search zone from “${esc(Z.lm.en)}” pins</text>`;
+  }
   const sel = S.nodes.find(n => n.id === S.sel);
   if (sel && sel.cons) { const c = xy(sel.cons); for (const o of sel.obs) { const p = xy(o); s += `<line x1="${c.x}" y1="${SY(c.y)}" x2="${p.x}" y2="${SY(p.y)}" stroke="${o.flagged ? 'var(--red)' : 'var(--ink)'}" stroke-opacity=".35" stroke-width="0.35"></line>`; } }
   for (const n of S.nodes) for (const o of n.obs) {
